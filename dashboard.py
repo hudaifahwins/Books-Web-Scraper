@@ -1,213 +1,102 @@
-import requests
-import plotly.express as px
-import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
-API_URL = "http://api:8000/books"
+html_content = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookScraper Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-[#09090b] text-white font-sans antialiased flex h-screen overflow-hidden">
 
-st.set_page_config(page_title="BookScraper Pro", layout="wide")
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-[#27272a] bg-[#18181b] p-6 flex flex-col">
+        <div class="text-2xl font-bold mb-8">📚 BookScraper Pro</div>
+        <input type="text" placeholder="Search books..." class="w-full bg-[#09090b] border border-[#27272a] rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 placeholder-gray-500" oninput="filterBooks(this.value)">
+    </aside>
 
-# ------------------------------------------------------------------
-# Massive CSS Override
-# ------------------------------------------------------------------
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    <!-- Main content -->
+    <main class="flex-1 overflow-y-auto p-8">
+        <h1 class="text-3xl font-semibold mb-8">Enterprise Analytics</h1>
 
-    * {
-        font-family: 'Inter', sans-serif !important;
-    }
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-6">
+                <div class="text-sm text-gray-400 uppercase tracking-wide mb-2">Total Books</div>
+                <div class="text-4xl font-bold"><h2 id="total-books">0</h2></div>
+            </div>
+            <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-6">
+                <div class="text-sm text-gray-400 uppercase tracking-wide mb-2">Average Price</div>
+                <div class="text-4xl font-bold"><h2 id="avg-price">£0.00</h2></div>
+            </div>
+            <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-6">
+                <div class="text-sm text-gray-400 uppercase tracking-wide mb-2">Most Expensive</div>
+                <div class="text-4xl font-bold"><h2 id="max-price">£0.00</h2></div>
+            </div>
+        </div>
 
-    .stApp {
-        background-color: #09090b;
-    }
+        <!-- Chart -->
+        <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-6">
+            <canvas id="booksChart" height="100"></canvas>
+        </div>
+    </main>
 
-    [data-testid="stHeader"],
-    footer,
-    #MainMenu {
-        visibility: hidden;
-    }
+    <script>
+        async function initDashboard() {
+            try {
+                const res = await fetch('http://localhost:8000/books');
+                const data = await res.json();
 
-    .block-container {
-        padding-top: 3rem;
-        padding-bottom: 3rem;
-        max-width: 1200px;
-    }
+                // Update KPI numbers
+                document.getElementById('total-books').textContent = data.length;
+                const avg = data.reduce((sum, b) => sum + b.price, 0) / data.length;
+                document.getElementById('avg-price').textContent = '£' + avg.toFixed(2);
+                const maxBook = data.reduce((max, b) => b.price > max.price ? b : max, data[0]);
+                document.getElementById('max-price').textContent = '£' + maxBook.price.toFixed(2);
 
-    /* Ensure sidebar is visible and styled to match theme */
-    [data-testid="stSidebar"] {
-        background: #18181b;
-        border-right: 1px solid #27272a;
-    }
+                // Sort top 10 by price descending
+                const top10 = data.sort((a, b) => b.price - a.price).slice(0, 10);
 
-    /* Hide the broken sidebar collapse button */
-    [data-testid="collapsedControl"] {
-        display: none;
-    }
+                new Chart(document.getElementById('booksChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: top10.map(b => b.title),
+                        datasets: [{
+                            label: 'Price (£)',
+                            data: top10.map(b => b.price),
+                            backgroundColor: '#6366f1',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false }
+                            },
+                            y: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error('Failed to load data', err);
+            }
+        }
 
-    /* Dataframe: remove border, transparent background, no shadow */
-    [data-testid="stDataFrame"] {
-        border: none !important;
-        background: rgba(0, 0, 0, 0) !important;
-        box-shadow: none !important;
-    }
+        initDashboard();
+    </script>
+</body>
+</html>
+"""
 
-    /* Custom header */
-    .custom-header {
-        margin-bottom: 40px;
-    }
-
-    .custom-header h1 {
-        font-weight: 600;
-        font-size: 32px;
-        letter-spacing: -1px;
-        color: #ffffff;
-        margin-bottom: 4px;
-    }
-
-    .custom-header p {
-        font-size: 16px;
-        color: #a1a1aa;
-        margin: 0;
-    }
-
-    /* KPI cards */
-    .kpi-container {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 32px;
-    }
-
-    .kpi-card {
-        background: #18181b;
-        border: 1px solid #27272a;
-        border-radius: 12px;
-        padding: 24px;
-        flex: 1;
-    }
-
-    .kpi-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: #a1a1aa;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
-    }
-
-    .kpi-value {
-        font-size: 36px;
-        font-weight: 700;
-        color: #ffffff;
-        line-height: 1.2;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# ------------------------------------------------------------------
-# Custom Header (raw HTML)
-# ------------------------------------------------------------------
-st.markdown("""
-<div class="custom-header">
-    <h1>BookScraper Pro</h1>
-    <p>Enterprise Data Pipeline and Analytics</p>
-</div>
-""", unsafe_allow_html=True)
-
-
-@st.cache_data(ttl=60)
-def fetch_books():
-    try:
-        response = requests.get(API_URL, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException:
-        return []
-
-books = fetch_books()
-
-if not books:
-    st.warning("No book data available. Please check the API connection.")
-    st.stop()
-
-df = pd.DataFrame(books)
-
-# ------------------------------------------------------------------
-# Sidebar Search Filter
-# ------------------------------------------------------------------
-st.sidebar.title("Filters")
-search_query = st.sidebar.text_input("Search by book title:", "")
-
-if search_query:
-    filtered_df = df[df["title"].str.contains(search_query, case=False, na=False)]
-else:
-    filtered_df = df
-
-# ------------------------------------------------------------------
-# KPI Cards (flexbox HTML, no st.metric)
-# ------------------------------------------------------------------
-total_books = len(filtered_df)
-avg_price = filtered_df["price"].mean()
-max_price = filtered_df["price"].max()
-
-st.markdown(f"""
-<div class="kpi-container">
-    <div class="kpi-card">
-        <div class="kpi-label">Total Books</div>
-        <div class="kpi-value">{total_books:,}</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Average Price</div>
-        <div class="kpi-value">£{avg_price:.2f}</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Most Expensive</div>
-        <div class="kpi-value">£{max_price:.2f}</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# ------------------------------------------------------------------
-# Plotly Horizontal Bar Chart (Top 10 most expensive books)
-# ------------------------------------------------------------------
-st.subheader("Top 10 Most Expensive Books")
-top_10 = filtered_df.nlargest(10, "price")
-
-fig = px.bar(
-    top_10,
-    x="price",
-    y="title",
-    orientation="h",
-    labels={"price": "Price (£)", "title": ""},
-)
-
-fig.update_traces(marker_color="#6366f1")
-
-fig.update_layout(
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    margin=dict(l=0, r=0, t=20, b=0),
-    height=400,
-    showlegend=False,
-    bargap=0.4,
-    font=dict(color="#ffffff"),
-    xaxis=dict(
-        showgrid=False,
-        zeroline=False,
-        showline=False,
-        tickfont=dict(size=14, color="#a1a1aa"),
-    ),
-    yaxis=dict(
-        showgrid=False,
-        zeroline=False,
-        showline=False,
-        tickfont=dict(size=14, color="#a1a1aa"),
-    ),
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# ------------------------------------------------------------------
-# Data Table
-# ------------------------------------------------------------------
-st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+components.html(html_content, height=1000, scrolling=True)
