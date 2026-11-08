@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookScraper Pro | Enterprise Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           1. UNIFIED DESIGN SYSTEM (Linear/Vercel)
+           ========================================= */
+        :root {
+            /* Surfaces */
+            --bg-base: #09090b;
+            --bg-surface: #121212;
+            --bg-surface-hover: #18181b;
+            
+            /* Borders */
+            --border-subtle: #27272a;
+            --border-strong: #3f3f46;
+            
+            /* Typography */
+            --text-primary: #ededed;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            
+            /* Accents */
+            --accent-indigo: #6366f1;
+            --accent-emerald: #10b981;
+            --accent-rose: #ef4444;
+            
+            /* Radii */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+        }
+
+        body {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        }
+
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Skeleton Loading */
+        .skeleton { background: linear-gradient(90deg, var(--bg-surface) 25%, var(--bg-surface-hover) 50%, var(--bg-surface) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius-sm); }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* Fade In */
+        .fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Ambient Glow */
+        .ambient-glow {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 800px; height: 300px;
+            background: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.08), transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+    </style>
+<style id="bookscraper-nebula-v2">
+
+/* BOOKSCRAPER_NEBULA_RGB_V2 */
+
+/* ------------------------------
+   GLOBAL DESIGN TOKENS
+------------------------------ */
+
+:root {
+    color-scheme: dark;
+
+    --nebula-bg: #08080d;
+    --nebula-surface: rgba(18,18,29,.88);
+    --nebula-indigo: #6366f1;
+    --nebula-violet: #a855f7;
+    --nebula-cyan: #06b6d4;
+    --nebula-blue: #3b82f6;
+    --nebula-emerald: #10b981;
+    --nebula-pink: #ec4899;
+
+    --nebula-text: #f4f4f8;
+    --nebula-muted: #a1a1aa;
+    --nebula-border: rgba(148,163,255,.17);
+}
+
+/* ------------------------------
+   ANIMATED RGB BACKGROUND
+------------------------------ */
+
+html {
+    background: var(--nebula-bg);
+}
+
+body {
+    background-color: var(--nebula-bg) !important;
+
+    background-image:
+        radial-gradient(
+            ellipse at 12% 15%,
+            rgba(99,102,241,.19),
+            transparent 38%
+        ),
+        radial-gradient(
+            ellipse at 88% 18%,
+            rgba(6,182,212,.13),
+            transparent 36%
+        ),
+        radial-gradient(
+            ellipse at 75% 85%,
+            rgba(168,85,247,.15),
+            transparent 38%
+        ),
+        radial-gradient(
+            ellipse at 20% 90%,
+            rgba(16,185,129,.09),
+            transparent 35%
+        ) !important;
+
+    background-size: 180% 180% !important;
+    animation: nebula-background 24s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-background {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 30% 100%;
+    }
+}
+
+/* ------------------------------
+   RGB ACCENT GRADIENTS
+------------------------------ */
+
+@keyframes nebula-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+h1,
+.page-title {
+    background-image: linear-gradient(
+        100deg,
+        #a5b4fc,
+        #22d3ee,
+        #34d399,
+        #c084fc,
+        #f0abfc,
+        #a5b4fc
+    );
+
+    background-size: 300% 300%;
+    animation: nebula-gradient 12s ease infinite;
+
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ------------------------------
+   RGB CARD BORDERS
+------------------------------ */
+
+@keyframes nebula-border {
+    0% {
+        border-color: rgba(99,102,241,.48);
+    }
+
+    25% {
+        border-color: rgba(6,182,212,.40);
+    }
+
+    50% {
+        border-color: rgba(16,185,129,.38);
+    }
+
+    75% {
+        border-color: rgba(168,85,247,.48);
+    }
+
+    100% {
+        border-color: rgba(99,102,241,.48);
+    }
+}
+
+.pro-card,
+.card,
+[data-card],
+main [class*="rounded-xl"],
+main [class*="rounded-2xl"] {
+    border-color: var(--nebula-border);
+
+    animation: nebula-border 18s linear infinite;
+
+    transition:
+        transform .3s ease,
+        box-shadow .3s ease,
+        background-color .3s ease;
+}
+
+.pro-card:hover,
+.card:hover,
+[data-card]:hover {
+    box-shadow:
+        0 0 18px rgba(99,102,241,.15),
+        0 0 35px rgba(6,182,212,.08);
+
+    transform: translateY(-2px);
+}
+
+/* ------------------------------
+   GLASSMORPHIC HEADER
+------------------------------ */
+
+header {
+    background: rgba(9,9,16,.78) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border-bottom: 1px solid rgba(129,140,248,.18);
+}
+
+/* ------------------------------
+   SIDEBAR LIGHTING
+------------------------------ */
+
+aside,
+.sidebar {
+    background: rgba(8,8,14,.94) !important;
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    border-right: 1px solid rgba(99,102,241,.16);
+}
+
+aside a,
+.sidebar a {
+    transition:
+        color .25s ease,
+        background .25s ease,
+        box-shadow .25s ease;
+}
+
+aside a:hover,
+.sidebar a:hover {
+    background: linear-gradient(
+        90deg,
+        rgba(99,102,241,.18),
+        rgba(6,182,212,.08)
+    ) !important;
+
+    box-shadow: inset 2px 0 #818cf8;
+}
+
+/* ------------------------------
+   BUTTON INTERACTIONS
+------------------------------ */
+
+button {
+    transition:
+        box-shadow .25s ease,
+        border-color .25s ease,
+        filter .25s ease,
+        transform .2s ease;
+}
+
+button:hover:not(:disabled) {
+    filter: brightness(1.13);
+
+    box-shadow:
+        0 0 12px rgba(99,102,241,.22),
+        0 0 24px rgba(6,182,212,.10);
+}
+
+button:active:not(:disabled) {
+    transform: scale(.98);
+}
+
+/* ------------------------------
+   SEARCH AND INPUTS
+------------------------------ */
+
+input,
+select,
+textarea {
+    transition:
+        border-color .25s ease,
+        box-shadow .25s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #818cf8 !important;
+
+    box-shadow:
+        0 0 0 2px rgba(99,102,241,.13),
+        0 0 16px rgba(6,182,212,.12) !important;
+
+    outline: none;
+}
+
+/* ------------------------------
+   TABLE INTERACTIONS
+------------------------------ */
+
+tbody tr {
+    transition: background .2s ease;
+}
+
+tbody tr:hover {
+    background: linear-gradient(
+        90deg,
+        rgba(99,102,241,.11),
+        rgba(6,182,212,.06)
+    ) !important;
+}
+
+/* ------------------------------
+   CHART POLISH
+------------------------------ */
+
+canvas {
+    transition: filter .3s ease;
+}
+
+canvas:hover {
+    filter: drop-shadow(
+        0 0 5px rgba(99,102,241,.12)
+    );
+}
+
+/* ------------------------------
+   PREMIUM SCROLLBAR
+------------------------------ */
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: #09090f;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+        180deg,
+        #6366f1,
+        #06b6d4,
+        #10b981,
+        #a855f7
+    );
+
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+        180deg,
+        #ec4899,
+        #6366f1
+    );
+}
+
+/* ------------------------------
+   SELECTION AND ACCESSIBILITY
+------------------------------ */
+
+::selection {
+    background: rgba(99,102,241,.42);
+    color: white;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+    outline: 2px solid #22d3ee;
+    outline-offset: 3px;
+}
+
+/* ------------------------------
+   RESPONSIVE POLISH
+------------------------------ */
+
+@media (max-width: 768px) {
+    .pro-card:hover,
+    .card:hover,
+    [data-card]:hover {
+        transform: none;
+    }
+
+    body {
+        animation-duration: 32s;
+    }
+}
+
+/* ------------------------------
+   REDUCED MOTION
+------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+</style>
+<style id="bookscraper-purple-dashboard-v3">
+
+/* ==========================================
+   BOOKSCRAPER PRO - PURPLE NEBULA UPGRADE
+   ========================================== */
+
+:root {
+    --bg-base: #080810;
+    --bg-surface: rgba(19, 19, 34, .91);
+    --bg-surface-hover: rgba(35, 32, 57, .96);
+
+    --border-subtle: rgba(153, 139, 255, .17);
+    --border-strong: rgba(168, 151, 255, .42);
+
+    --text-primary: #f5f3ff;
+    --text-secondary: #aaa7c4;
+    --text-muted: #77748f;
+
+    --accent-indigo: #8b5cf6;
+    --accent-emerald: #34d399;
+    --accent-rose: #fb7185;
+}
+
+/* BACKGROUND */
+
+html, body {
+    background: #080810 !important;
+}
+
+body {
+    background-image:
+        radial-gradient(ellipse at 15% 10%,
+            rgba(109, 40, 217, .25), transparent 42%),
+        radial-gradient(ellipse at 85% 15%,
+            rgba(79, 70, 229, .20), transparent 38%),
+        radial-gradient(ellipse at 75% 90%,
+            rgba(168, 85, 247, .16), transparent 40%),
+        radial-gradient(ellipse at 10% 90%,
+            rgba(6, 182, 212, .09), transparent 35%) !important;
+
+    background-size: 200% 200% !important;
+    animation: purpleNebula 22s ease-in-out infinite alternate;
+}
+
+@keyframes purpleNebula {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 20% 100%; }
+}
+
+/* AMBIENT LIGHTING */
+
+.ambient-glow {
+    max-width: 1100px !important;
+    height: 450px !important;
+
+    background: radial-gradient(
+        ellipse at top,
+        rgba(139, 92, 246, .20),
+        rgba(99, 102, 241, .07) 40%,
+        transparent 75%
+    ) !important;
+}
+
+/* SIDEBAR */
+
+aside {
+    background: rgba(9, 9, 20, .91) !important;
+    backdrop-filter: blur(25px);
+    border-right: 1px solid rgba(139, 92, 246, .23) !important;
+}
+
+aside > div:first-child {
+    border-bottom-color: rgba(139, 92, 246, .20) !important;
+}
+
+aside button {
+    border-radius: 10px !important;
+    transition: all .25s ease !important;
+}
+
+aside button:hover {
+    background: linear-gradient(
+        90deg,
+        rgba(139, 92, 246, .22),
+        rgba(99, 102, 241, .08)
+    ) !important;
+
+    box-shadow: inset 3px 0 #a78bfa;
+}
+
+aside button.bg-\[var\(--bg-surface\)\] {
+    background: linear-gradient(
+        110deg,
+        rgba(139, 92, 246, .25),
+        rgba(99, 102, 241, .12)
+    ) !important;
+
+    border-color: rgba(167, 139, 250, .35) !important;
+}
+
+/* HEADER */
+
+header {
+    background: rgba(10, 10, 20, .76) !important;
+    backdrop-filter: blur(24px) !important;
+    border-bottom: 1px solid rgba(139, 92, 246, .20) !important;
+}
+
+/* BRAND LOGO */
+
+aside .bg-\[var\(--accent-indigo\)\] {
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #6366f1,
+        #a855f7
+    ) !important;
+
+    box-shadow: 0 0 24px rgba(139, 92, 246, .45) !important;
+}
+
+/* PAGE TITLES */
+
+h1 {
+    background: linear-gradient(
+        100deg,
+        #c4b5fd,
+        #a78bfa,
+        #818cf8,
+        #67e8f9,
+        #c4b5fd
+    ) !important;
+
+    background-size: 300% 300% !important;
+    animation: titleGlow 9s ease infinite !important;
+
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+@keyframes titleGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ALL DASHBOARD CARDS */
+
+main [class*="bg-[var(--bg-surface)]"] {
+    background: linear-gradient(
+        145deg,
+        rgba(25, 23, 43, .95),
+        rgba(14, 14, 26, .97)
+    ) !important;
+
+    border-color: rgba(167, 139, 250, .20) !important;
+
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, .20),
+        inset 0 1px rgba(255, 255, 255, .025);
+
+    transition:
+        border-color .3s ease,
+        box-shadow .3s ease,
+        transform .3s ease !important;
+}
+
+main [class*="bg-[var(--bg-surface)]"]:hover {
+    border-color: rgba(167, 139, 250, .48) !important;
+
+    box-shadow:
+        0 0 22px rgba(139, 92, 246, .12),
+        0 12px 35px rgba(0, 0, 0, .24);
+}
+
+/* KPI CARDS */
+
+#view-overview .grid > div {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px !important;
+}
+
+#view-overview .grid > div::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        #8b5cf6,
+        #6366f1,
+        #22d3ee,
+        transparent
+    );
+
+    opacity: .8;
+}
+
+#total-books,
+#avg-price,
+#max-price {
+    text-shadow: 0 0 20px rgba(167, 139, 250, .20);
+}
+
+/* CHART CONTAINERS */
+
+canvas {
+    filter: drop-shadow(0 0 8px rgba(139, 92, 246, .10));
+}
+
+#view-overview canvas,
+#view-analytics canvas {
+    transition: filter .3s ease;
+}
+
+#view-overview canvas:hover,
+#view-analytics canvas:hover {
+    filter: drop-shadow(0 0 12px rgba(139, 92, 246, .22));
+}
+
+/* ANALYTICS CARDS */
+
+#view-analytics .grid > div {
+    border-radius: 15px !important;
+}
+
+#view-analytics .grid > div:first-child {
+    border-top: 2px solid #8b5cf6 !important;
+}
+
+/* TABLE */
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+thead {
+    background: rgba(12, 12, 25, .97) !important;
+}
+
+tbody tr {
+    transition: background .2s ease;
+}
+
+tbody tr:hover {
+    background: linear-gradient(
+        90deg,
+        rgba(139, 92, 246, .15),
+        rgba(99, 102, 241, .06)
+    ) !important;
+}
+
+th {
+    color: #aaa7c4 !important;
+}
+
+/* BUTTONS */
+
+button {
+    transition: all .25s ease !important;
+}
+
+button:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+button:active:not(:disabled) {
+    transform: scale(.98);
+}
+
+/* SEARCH */
+
+input {
+    caret-color: #a78bfa;
+}
+
+input:focus {
+    border-color: #a78bfa !important;
+
+    box-shadow:
+        0 0 0 3px rgba(139, 92, 246, .15),
+        0 0 20px rgba(99, 102, 241, .10) !important;
+}
+
+/* LIVE STATUS */
+
+#view-overview .bg-\[var\(--accent-emerald\)\]\/10 {
+    box-shadow: 0 0 18px rgba(16, 185, 129, .08);
+}
+
+/* FOOTER */
+
+footer {
+    background: rgba(8, 8, 16, .96) !important;
+    border-top-color: rgba(139, 92, 246, .25) !important;
+}
+
+/* SCROLLBAR */
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0b0b16;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+        180deg,
+        #8b5cf6,
+        #6366f1,
+        #06b6d4
+    );
+
+    border-radius: 20px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width: 768px) {
+    aside {
+        width: 190px !important;
+    }
+
+    main .p-8 {
+        padding: 16px !important;
+    }
+}
+
+/* ACCESSIBILITY */
+
+::selection {
+    background: rgba(139, 92, 246, .45);
+    color: white;
+}
+
+@media(prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style id="bookscraper-premium-typography">
+
+/* BOOKSCRAPER_PREMIUM_TYPE_V1 */
+
+:root {
+    --font-ui: 'Manrope', sans-serif;
+    --font-data: 'IBM Plex Mono', monospace;
+}
+
+/* GLOBAL INTERFACE TYPOGRAPHY */
+
+html, body {
+    font-family: var(--font-ui) !important;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+}
+
+body button,
+body input,
+body select,
+body textarea,
+body table,
+body th,
+body td {
+    font-family: var(--font-ui) !important;
+}
+
+/* PAGE HEADINGS */
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-ui) !important;
+    font-weight: 700;
+    letter-spacing: -.045em;
+    text-rendering: optimizeLegibility;
+}
+
+#view-overview > div:first-child h1,
+#view-analytics > div:first-child h1 {
+    font-size: clamp(25px, 2.2vw, 30px) !important;
+    font-weight: 800 !important;
+    letter-spacing: -.055em !important;
+    line-height: 1.2;
+}
+
+#view-overview > div:first-child p,
+#view-analytics > div:first-child p {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -.01em;
+    color: #aaa7c4 !important;
+}
+
+/* KPI NUMBERS */
+
+#total-books,
+#avg-price,
+#max-price,
+#median-price,
+#min-price,
+#price-range,
+#doughnut-center-count {
+    font-family: var(--font-ui) !important;
+    font-weight: 800 !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.055em !important;
+    line-height: 1.2;
+}
+
+/* KPI LABELS */
+
+#view-overview .uppercase,
+#view-analytics .uppercase {
+    font-family: var(--font-ui) !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: .11em !important;
+}
+
+/* CHART HEADINGS */
+
+#view-overview h3,
+#view-analytics h3 {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: -.025em !important;
+}
+
+/* TABLE TYPOGRAPHY */
+
+#view-overview table {
+    font-size: 13px;
+}
+
+#view-overview th {
+    font-weight: 700 !important;
+    font-size: 10px !important;
+    letter-spacing: .11em !important;
+}
+
+#view-overview td {
+    font-weight: 500 !important;
+    letter-spacing: -.015em;
+}
+
+/* FINANCIAL DATA */
+
+body .font-mono,
+#latency {
+    font-family: var(--font-data) !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.035em;
+}
+
+/* NAVIGATION */
+
+aside button {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: -.015em;
+}
+
+/* GENERAL TEXT REFINEMENT */
+
+.text-white {
+    text-rendering: optimizeLegibility;
+}
+
+footer {
+    font-family: var(--font-data) !important;
+    font-size: 10px;
+    letter-spacing: -.02em;
+}
+
+/* COMMAND PALETTE */
+
+#commandPalette input {
+    font-family: var(--font-ui) !important;
+    font-weight: 500;
+}
+
+/* RESPONSIVE TYPOGRAPHY */
+
+@media(max-width: 768px) {
+    #view-overview > div:first-child h1,
+    #view-analytics > div:first-child h1 {
+        font-size: 25px !important;
+    }
+
+    #total-books,
+    #avg-price,
+    #max-price {
+        font-size: 27px !important;
+    }
+}
+
+</style>
+<style id="bookscraper-table-scroll-pro">
+
+/* BOOKSCRAPER_TABLE_SCROLL_PRO_V2 */
+
+/* Hide the visual scrollbar without disabling scrolling. */
+
+.table-scroll-hidden {
+    overflow-y: auto !important;
+
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+
+    scrollbar-gutter: auto !important;
+
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+
+    scroll-behavior: smooth;
+}
+
+/* Chrome, Edge, Safari and other WebKit/Blink browsers */
+
+.table-scroll-hidden::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+/* Preserve a visible keyboard focus indicator. */
+
+.table-scroll-hidden:focus-visible {
+    outline: 2px solid rgba(139, 92, 246, .8);
+    outline-offset: -2px;
+}
+
+/* Respect reduced-motion settings. */
+
+@media (prefers-reduced-motion: reduce) {
+    .table-scroll-hidden {
+        scroll-behavior: auto;
+    }
+}
+
+</style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden selection:bg-[var(--accent-indigo)]/30">
+    
+    <div class="flex flex-1 overflow-hidden">
+        <!-- SIDEBAR -->
+        <aside class="w-[260px] bg-[var(--bg-base)] border-r border-[var(--border-subtle)] flex flex-col z-20 shrink-0">
+            <div class="h-16 flex items-center px-5 border-b border-[var(--border-subtle)]">
+                <div class="w-8 h-8 rounded-lg bg-[var(--accent-indigo)] flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(99,102,241,0.3)] mr-3 text-sm">B</div>
+                <span class="text-[14px] font-semibold tracking-tight text-white">BookScraper Pro</span>
+            </div>
+            
+            <nav class="flex-1 p-3 flex flex-col gap-1 overflow-y-auto">
+                <div class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider px-2 mb-1 mt-2">Platform</div>
+                <button id="nav-overview" onclick="switchTab('overview')" class="flex items-center gap-3 px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--bg-surface)] text-white text-[13px] font-medium border border-[var(--border-subtle)] transition-all w-full text-left">
+                    <svg class="w-4 h-4 text-[var(--accent-indigo)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    Overview
+                </button>
+                <button id="nav-analytics" onclick="switchTab('analytics')" class="flex items-center gap-3 px-3 py-2 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-surface-hover)] text-[13px] font-medium border border-transparent transition-all w-full text-left">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Analytics
+                </button>
+            </nav>
+
+            <div class="p-3 border-t border-[var(--border-subtle)]">
+                <div class="flex items-center gap-3 p-2 rounded-[var(--radius-sm)] hover:bg-[var(--bg-surface-hover)] cursor-pointer transition-colors border border-transparent">
+                    <div class="w-8 h-8 rounded-full bg-[var(--bg-surface-hover)] border border-[var(--border-strong)] flex items-center justify-center text-[11px] font-bold text-white">F</div>
+                    <div class="flex flex-col">
+                        <span class="text-[12px] font-medium text-white">Founder</span>
+                        <span class="text-[10px] text-[var(--text-muted)]">founder@bookscraper.com</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            <div class="ambient-glow"></div>
+
+            <!-- TOP BAR -->
+            <header class="h-16 border-b border-[var(--border-subtle)] flex items-center justify-between px-8 bg-[var(--bg-base)]/80 backdrop-blur-xl z-30 shrink-0">
+                <div class="flex items-center gap-2 text-[13px] font-medium text-[var(--text-muted)]">
+                    <span class="hover:text-white cursor-pointer transition-colors">BookScraper</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    <span id="breadcrumb-active" class="text-[var(--text-primary)]">Overview</span>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleCommandPalette()" class="flex items-center gap-2 w-64 bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] rounded-[var(--radius-sm)] px-3 py-1.5 text-[13px] text-[var(--text-secondary)] transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <span>Search...</span>
+                        <span class="ml-auto bg-[var(--border-subtle)] text-[var(--text-muted)] px-1.5 py-0.5 rounded text-[10px] font-mono font-medium">⌘K</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- SCROLLABLE PAGE CONTENT -->
+            <div class="flex-1 overflow-y-auto p-8 relative z-10">
+                
+                <!-- OVERVIEW TAB -->
+                <div id="view-overview" class="max-w-[1200px] mx-auto flex flex-col gap-6 h-full pb-8 fade-in">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h1 class="text-[22px] font-semibold tracking-tight text-white mb-1">Overview</h1>
+                            <p class="text-[13px] text-[var(--text-secondary)]">Real-time metrics from your scraped inventory.</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-[11px] font-medium text-[var(--accent-emerald)] bg-[var(--accent-emerald)]/10 px-2.5 py-1 rounded-[var(--radius-sm)] border border-[var(--accent-emerald)]/20">
+                            <div class="w-1.5 h-1.5 rounded-full bg-[var(--accent-emerald)] animate-pulse"></div>
+                            Live Data
+                        </div>
+                    </div>
+
+                    <!-- KPI CARDS -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 shrink-0">
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-5">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Total Books</span>
+                                <svg class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            </div>
+                            <div class="text-3xl font-semibold text-white tabular-nums tracking-tight" id="total-books"><div class="h-8 w-24 skeleton"></div></div>
+                        </div>
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-5">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Average Price</span>
+                                <svg class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div class="text-3xl font-semibold text-white tabular-nums tracking-tight" id="avg-price"><div class="h-8 w-24 skeleton"></div></div>
+                        </div>
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-5">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Most Expensive</span>
+                                <svg class="w-4 h-4 text-[var(--accent-rose)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                            </div>
+                            <div class="text-3xl font-semibold text-white tabular-nums tracking-tight" id="max-price"><div class="h-8 w-24 skeleton"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- CHART -->
+                    <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-6 flex-1 min-h-[360px] flex flex-col">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-[13px] font-semibold text-white">Top 10 Most Expensive Books</h3>
+                            <span class="text-[11px] text-[var(--text-muted)] bg-[var(--bg-base)] px-2 py-1 rounded border border-[var(--border-subtle)]">Price (GBP)</span>
+                        </div>
+                        <div class="flex-1 relative w-full">
+                            <canvas id="booksChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- TABLE -->
+                    <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] overflow-hidden shrink-0 h-[300px] flex flex-col">
+                        <div class="flex-1 overflow-y-auto table-scroll-hidden" style="scrollbar-gutter: stable;" role="region" tabindex="0" aria-label="Book inventory, scrollable table">
+                            <table class="w-full text-left text-[13px] table-fixed">
+                                <colgroup>
+                                    <col class="w-[85%]">
+                                    <col class="w-[15%]">
+                                </colgroup>
+                                <thead class="bg-[var(--bg-base)]/95 text-[11px] uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border-subtle)] sticky top-0 z-10 backdrop-blur-md">
+                                    <tr>
+                                        <th class="px-5 py-3 font-medium cursor-pointer hover:text-white transition-colors" onclick="sortTable('title')">Book Title <span id="sort-icon-title">↓</span></th>
+                                        <th class="px-5 py-3 font-medium text-right cursor-pointer hover:text-white transition-colors" onclick="sortTable('price')">Price <span id="sort-icon-price"></span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body" class="divide-y divide-[var(--border-subtle)]">
+                                </tbody>
+                            </table>
+                            <div id="table-empty" class="hidden flex-col items-center justify-center py-12 text-[var(--text-muted)]">
+                                <svg class="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <p class="text-sm">No books found matching your search.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS TAB -->
+                <div id="view-analytics" class="hidden max-w-[1200px] mx-auto flex flex-col gap-6 h-full pb-8 fade-in">
+                    <div>
+                        <h1 class="text-[22px] font-semibold tracking-tight text-white mb-1">Analytics</h1>
+                        <p class="text-[13px] text-[var(--text-secondary)]">Distribution and statistical insights from your dataset.</p>
+                    </div>
+
+                    <!-- NEW: Mathematical KPIs -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-5 shrink-0">
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-4">
+                            <div class="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Median Price</div>
+                            <div class="text-xl font-semibold text-white tabular-nums" id="median-price">--</div>
+                        </div>
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-4">
+                            <div class="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Lowest Price</div>
+                            <div class="text-xl font-semibold text-white tabular-nums" id="min-price">--</div>
+                        </div>
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-4">
+                            <div class="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Price Range</div>
+                            <div class="text-xl font-semibold text-white tabular-nums" id="price-range">--</div>
+                        </div>
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-4">
+                            <div class="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Total Categories</div>
+                            <div class="text-xl font-semibold text-white tabular-nums">3</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[400px]">
+                        <!-- Price Distribution -->
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-6 flex flex-col">
+                            <h3 class="text-[13px] font-semibold text-white mb-6">Price Distribution</h3>
+                            <div class="flex-1 relative w-full flex items-center justify-center">
+                                <canvas id="priceDistChart"></canvas>
+                                <!-- Center Text Overlay -->
+                                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <span class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Total</span>
+                                    <span class="text-2xl font-semibold text-white tabular-nums" id="doughnut-center-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Top 5 Cheapest -->
+                        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-6 flex flex-col">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-[13px] font-semibold text-white">Top 5 Cheapest Books</h3>
+                                <span class="text-[11px] text-[var(--text-muted)] bg-[var(--bg-base)] px-2 py-1 rounded border border-[var(--border-subtle)]">Price (GBP)</span>
+                            </div>
+                            <div class="flex-1 relative w-full">
+                                <canvas id="cheapestChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- STATUS BAR -->
+    <footer class="h-8 bg-[var(--bg-base)] border-t border-[var(--border-subtle)] flex items-center justify-between px-6 text-[10px] text-[var(--text-muted)] z-20 shrink-0">
+        <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1.5 font-medium"><div class="w-1.5 h-1.5 rounded-full bg-[var(--accent-emerald)]"></div> Systems Operational</span>
+            <span class="hidden sm:inline">PostgreSQL v15</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="latency" class="tabular-nums font-medium text-[var(--text-secondary)]">--ms</span>
+            <span>v1.0.0</span>
+        </div>
+    </footer>
+
+    <!-- COMMAND PALETTE -->
+    <div id="commandPalette" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-[15vh]">
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] shadow-2xl w-full max-w-lg overflow-hidden fade-in">
+            <div class="flex items-center px-4 py-3 border-b border-[var(--border-subtle)]">
+                <svg class="w-4 h-4 text-[var(--text-muted)] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="commandInput" placeholder="Search books..." class="w-full bg-transparent border-none text-white focus:outline-none placeholder-[var(--text-muted)] text-[13px]" autocomplete="off">
+                <div class="text-[10px] text-[var(--text-muted)] border border-[var(--border-subtle)] rounded px-1.5 py-0.5 ml-2 font-mono">ESC</div>
+            </div>
+            <div class="max-h-[300px] overflow-y-auto p-2">
+                <div class="text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-semibold px-3 py-2">Quick Actions</div>
+                <div class="flex items-center gap-3 px-3 py-2 hover:bg-[var(--bg-surface-hover)] rounded-[var(--radius-sm)] cursor-pointer transition-colors" onclick="switchTab('overview'); closeCommandPalette();">
+                    <svg class="w-4 h-4 text-[var(--accent-indigo)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    <span class="text-[13px] text-[var(--text-primary)]">Go to Overview</span>
+                </div>
+                <div class="flex items-center gap-3 px-3 py-2 hover:bg-[var(--bg-surface-hover)] rounded-[var(--radius-sm)] cursor-pointer transition-colors" onclick="switchTab('analytics'); closeCommandPalette();">
+                    <svg class="w-4 h-4 text-[var(--accent-indigo)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <span class="text-[13px] text-[var(--text-primary)]">Go to Analytics</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================
+        // 1. STATE & UTILITIES
+        // =========================================
+        const State = {
+            allData: [],
+            currentSort: { key: 'price', asc: false },
+            charts: { main: null, analytics: [] }
+        };
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // =========================================
+        // 2. DOM & NAVIGATION
+        // =========================================
+        function toggleCommandPalette() {
+            const modal = document.getElementById('commandPalette');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) document.getElementById('commandInput').focus();
+        }
+        function closeCommandPalette() { document.getElementById('commandPalette').classList.add('hidden'); }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); toggleCommandPalette(); }
+            if (e.key === 'Escape') closeCommandPalette();
+        });
+
+        function switchTab(tab) {
+            document.getElementById('view-overview').classList.add('hidden');
+            document.getElementById('view-analytics').classList.add('hidden');
+            document.getElementById('view-' + tab).classList.remove('hidden');
+            document.getElementById('breadcrumb-active').innerText = tab.charAt(0).toUpperCase() + tab.slice(1);
+
+            const btnOverview = document.getElementById('nav-overview');
+            const btnAnalytics = document.getElementById('nav-analytics');
+            
+            const activeClass = "flex items-center gap-3 px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--bg-surface)] text-white text-[13px] font-medium border border-[var(--border-subtle)] transition-all w-full text-left";
+            const inactiveClass = "flex items-center gap-3 px-3 py-2 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-surface-hover)] text-[13px] font-medium border border-transparent transition-all w-full text-left";
+
+            if (tab === 'overview') {
+                btnOverview.className = activeClass;
+                btnOverview.querySelector('svg').classList.add('text-[var(--accent-indigo)]');
+                btnAnalytics.className = inactiveClass;
+                btnAnalytics.querySelector('svg').classList.remove('text-[var(--accent-indigo)]');
+            } else {
+                btnAnalytics.className = activeClass;
+                btnAnalytics.querySelector('svg').classList.add('text-[var(--accent-indigo)]');
+                btnOverview.className = inactiveClass;
+                btnOverview.querySelector('svg').classList.remove('text-[var(--accent-indigo)]');
+                renderAnalytics();
+            }
+        }
+
+        // =========================================
+        // 3. DATA FETCHING & CALCULATIONS
+        // =========================================
+        async function initDashboard() {
+            try {
+                const t0 = performance.now();
+                const res = await fetch('/books?limit=1000');
+                const data = await res.json();
+                const t1 = performance.now();
+                
+                document.getElementById('latency').innerText = Math.round(t1 - t0) + 'ms';
+                State.allData = data;
+                updateUI();
+
+                document.getElementById('commandInput').addEventListener('input', debounce((e) => {
+                    const query = e.target.value.toLowerCase();
+                    const filtered = State.allData.filter(b => b.title.toLowerCase().includes(query));
+                    updateUI(filtered);
+                    closeCommandPalette();
+                }, 150));
+            } catch (e) { console.error("API Error:", e); }
+        }
+
+        function updateUI(dataToRender = State.allData) {
+            const tbody = document.getElementById('table-body');
+            const emptyState = document.getElementById('table-empty');
+
+            if (dataToRender.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
+            // KPI Calculations
+            const total = dataToRender.length;
+            const sum = dataToRender.reduce((acc, book) => acc + book.price, 0);
+            const avg = total ? (sum / total) : 0;
+            const sortedPrices = [...dataToRender].sort((a, b) => a.price - b.price);
+            
+            const min = total ? sortedPrices[0].price : 0;
+            const max = total ? sortedPrices[total - 1].price : 0;
+            
+            // Median Calculation
+            let median = 0;
+            if (total > 0) {
+                const mid = Math.floor(total / 2);
+                median = total % 2 !== 0 ? sortedPrices[mid].price : (sortedPrices[mid - 1].price + sortedPrices[mid].price) / 2;
+            }
+
+            // Update DOM
+            document.getElementById('total-books').innerText = total.toLocaleString();
+            document.getElementById('avg-price').innerText = '£' + avg.toFixed(2);
+            document.getElementById('max-price').innerText = '£' + max.toFixed(2);
+            
+            // Update Analytics KPIs
+            document.getElementById('median-price').innerText = '£' + median.toFixed(2);
+            document.getElementById('min-price').innerText = '£' + min.toFixed(2);
+            document.getElementById('price-range').innerText = '£' + (max - min).toFixed(2);
+            document.getElementById('doughnut-center-count').innerText = total.toLocaleString();
+
+            renderTable(dataToRender);
+            
+            const top10 = [...dataToRender].sort((a, b) => b.price - a.price).slice(0, 10);
+            renderChart(top10);
+        }
+
+        // =========================================
+        // 4. TABLE RENDERING
+        // =========================================
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            const sortedData = [...data].sort((a, b) => {
+                if (State.currentSort.key === 'title') {
+                    return State.currentSort.asc ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+                } else {
+                    return State.currentSort.asc ? a.price - b.price : b.price - a.price;
+                }
+            });
+
+            const rows = sortedData.map(book => `
+                <tr class="hover:bg-[var(--bg-surface-hover)] transition-colors group cursor-pointer border-b border-[var(--border-subtle)]">
+                    <td class="px-5 py-3 text-[var(--text-secondary)] group-hover:text-white truncate">${book.title}</td>
+                    <td class="px-5 py-3 text-right text-[var(--text-secondary)] group-hover:text-white font-mono tabular-nums">£${book.price.toFixed(2)}</td>
+                </tr>
+            `).join('');
+            
+            tbody.innerHTML = rows;
+            
+            document.getElementById('sort-icon-title').innerText = State.currentSort.key === 'title' ? (State.currentSort.asc ? '↑' : '↓') : '';
+            document.getElementById('sort-icon-price').innerText = State.currentSort.key === 'price' ? (State.currentSort.asc ? '↑' : '↓') : '';
+        }
+
+        function sortTable(key) {
+            if (State.currentSort.key === key) { State.currentSort.asc = !State.currentSort.asc; } else { State.currentSort.key = key; State.currentSort.asc = true; }
+            const query = document.getElementById('commandInput').value.toLowerCase();
+            const filtered = State.allData.filter(b => b.title.toLowerCase().includes(query));
+            updateUI(filtered);
+        }
+
+        // =========================================
+        // 5. CHART.JS CONFIGURATIONS (MNC Grade)
+        // =========================================
+        
+        const priceLabelPlugin = {
+            id: 'priceLabel',
+            afterDatasetsDraw(chart) {
+                if (chart.config.type !== 'bar') return;
+                const { ctx } = chart;
+                ctx.save();
+                ctx.font = '600 11px Manrope';
+                ctx.fillStyle = '#a1a1aa'; 
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                
+                chart.getDatasetMeta(0).data.forEach((bar, index) => {
+                    const val = chart.data.datasets[0].data[index];
+                    if (val !== undefined) {
+                        ctx.fillText('£' + val.toFixed(2), bar.x + 8, bar.y);
+                    }
+                });
+                ctx.restore();
+            }
+        };
+        Chart.register(priceLabelPlugin);
+
+        const tooltipConfig = {
+            backgroundColor: 'rgba(18, 18, 20, 0.95)',
+            titleColor: '#ededed',
+            bodyColor: '#a1a1aa',
+            borderColor: '#27272a',
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 6,
+            displayColors: false,
+            titleFont: { family: 'Manrope', size: 12, weight: '600' },
+            bodyFont: { family: 'Manrope', size: 12 }
+        };
+
+        function renderChart(top10) {
+            const ctx = document.getElementById('booksChart').getContext('2d');
+            
+            if (State.charts.main) {
+                State.charts.main.data.labels = top10.map(b => b.title);
+                State.charts.main.data.datasets[0].data = top10.map(b => b.price);
+                State.charts.main.update('none');
+                return;
+            }
+
+            State.charts.main = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top10.map(b => b.title),
+                    datasets: [{
+                        data: top10.map(b => b.price),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 4,
+                        borderSkipped: false,
+                        barThickness: 10,
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.9
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { right: 60, left: 10 } },
+                    animation: { duration: 0 },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: tooltipConfig
+                    },
+                    scales: {
+                        x: { 
+                            grid: { display: false, drawBorder: false }, 
+                            ticks: { color: '#52525b', font: { family: 'Manrope', size: 10 } } 
+                        },
+                        y: { 
+                            grid: { display: false, drawBorder: false }, 
+                            ticks: { 
+                                color: '#a1a1aa', 
+                                font: { family: 'Manrope', size: 11, weight: 500 },
+                                callback: function(value) {
+                                    let label = this.getLabelForValue(value);
+                                    return label.length > 25 ? label.substring(0, 25) + '...' : label;
+                                }
+                            } 
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAnalytics() {
+            if (!State.allData || State.allData.length === 0) return;
+            State.charts.analytics.forEach(c => c.destroy());
+            State.charts.analytics = [];
+
+            const budget = State.allData.filter(b => b.price < 20).length;
+            const mid = State.allData.filter(b => b.price >= 20 && b.price <= 40).length;
+            const premium = State.allData.filter(b => b.price > 40).length;
+
+            const ctx1 = document.getElementById('priceDistChart').getContext('2d');
+            const chart1 = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Budget (<£20)', 'Mid-Range (£20-£40)', 'Premium (>£40)'],
+                    datasets: [{
+                        data: [budget, mid, premium],
+                        backgroundColor: ['#4f46e5', '#818cf8', '#c7d2fe'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { color: '#a1a1aa', font: { family: 'Manrope', size: 11 }, usePointStyle: true, boxWidth: 6, padding: 20 } 
+                        },
+                        tooltip: tooltipConfig
+                    },
+                    cutout: '75%'
+                }
+            });
+            State.charts.analytics.push(chart1);
+
+            const cheapest = [...State.allData].sort((a, b) => a.price - b.price).slice(0, 5);
+            const ctx2 = document.getElementById('cheapestChart').getContext('2d');
+
+            const chart2 = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: cheapest.map(b => b.title),
+                    datasets: [{
+                        data: cheapest.map(b => b.price),
+                        backgroundColor: '#10b981',
+                        borderRadius: 4,
+                        borderSkipped: false,
+                        barThickness: 10,
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.9
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    layout: { padding: { right: 60, left: 10 } },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: tooltipConfig
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#52525b', font: { family: 'Manrope', size: 10 } } },
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                color: '#a1a1aa', 
+                                font: { family: 'Manrope', size: 11 },
+                                callback: function(value) {
+                                    let label = this.getLabelForValue(value);
+                                    return label.length > 25 ? label.substring(0, 25) + '...' : label;
+                                }
+                            } 
+                        }
+                    }
+                }
+            });
+            State.charts.analytics.push(chart2);
+        }
+
+        // Boot
+        initDashboard();
+    </script>
+<script id="bookscraper-font-refresh">
+if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+        if (window.Chart && Chart.instances) {
+            Object.values(Chart.instances).forEach(chart => {
+                chart.update('none');
+            });
+        }
+    });
+}
+</script>
+</body>
+</html>
