@@ -1,8 +1,13 @@
 import os
 import pandas as pd
 
-# Override DATABASE_URL to point to local PostgreSQL before importing api module
-os.environ["DATABASE_URL"] = "postgresql+psycopg2://admin:secret@localhost:5433/books_db"
+# Respect externally-supplied DATABASE_URL (e.g. Neon), fallback to local DB
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://admin:secret@localhost:5433/books_db")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+os.environ["DATABASE_URL"] = DATABASE_URL
 
 from api import Base, Book, SessionLocal, engine
 
