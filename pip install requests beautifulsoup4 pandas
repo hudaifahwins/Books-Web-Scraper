@@ -1,0 +1,9 @@
+
+This installs:
+
+- **requests** – for making HTTP requests.
+- **beautifulsoup4** – for parsing HTML content.
+- **pandas** – for data manipulation and CSV export.
+
+### Optional Virtual Environment Setup (Recommended)
+
