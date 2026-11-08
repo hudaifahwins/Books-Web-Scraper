@@ -384,6 +384,30 @@
             updateUI(filtered);
         }
 
+        // Custom plugin to draw subtle GBP price labels at the end of each bar
+        const priceLabelPlugin = {
+            id: 'priceLabelPlugin',
+            afterDatasetsDraw(chart, args, options) {
+                const { ctx } = chart;
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (!meta.hidden) {
+                        meta.data.forEach((element, index) => {
+                            const value = dataset.data[index];
+                            const pos = element.tooltipPosition();
+                            ctx.save();
+                            ctx.font = '500 10px Inter, sans-serif';
+                            ctx.fillStyle = '#a1a1aa';
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText('£' + Number(value).toFixed(2), pos.x + 8, pos.y);
+                            ctx.restore();
+                        });
+                    }
+                });
+            }
+        };
+
         function renderChart(top10) {
             const ctx = document.getElementById('booksChart').getContext('2d');
             
@@ -412,7 +436,7 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: { padding: { right: 20, left: 10 } },
+                    layout: { padding: { right: 70, left: 10 } },
                     animation: { duration: 0 },
                     plugins: {
                         legend: { display: false },
@@ -434,7 +458,8 @@
                         x: { grid: { display: false, drawBorder: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } },
                         y: { grid: { display: false, drawBorder: false }, ticks: { color: '#e4e4e7', font: { family: 'Inter', size: 12, weight: 500 } } }
                     }
-                }
+                },
+                plugins: [priceLabelPlugin]
             });
         }
 
@@ -494,12 +519,14 @@
                     indexAxis: 'y', 
                     responsive: true, 
                     maintainAspectRatio: false,
+                    layout: { padding: { right: 70, left: 10 } },
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } },
                         y: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } }
                     }
-                }
+                },
+                plugins: [priceLabelPlugin]
             });
             analyticsCharts.push(chart2);
         }
