@@ -1,28 +1,22 @@
-# 🕸️ BookScraper Pro
+﻿# 🕸️ BookScraper Pro: Enterprise Data Pipeline
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)
+> A full-stack, cloud-native application that scrapes, stores, and visualizes 1,000+ book records with a premium, interactive dashboard.
 
-**Enterprise‑grade web scraper for extracting book data from [books.toscrape.com](http://books.toscrape.com) with robust retry logic, structured logging, and multi‑format output.**
+**[🚀 View Live Demo](https://hudaifahwins.github.io/Books-Web-Scraper/)** | **[📚 API Documentation](https://books-web-scraper.onrender.com/docs)**
 
----
+![BookScraper Pro Dashboard](https://img.shields.io/badge/Status-Live-success) ![Python](https://img.shields.io/badge/Python-3.11+-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green) ![Docker](https://img.shields.io/badge/Docker-Ready-blue) ![License](https://img.shields.io/badge/License-MIT-purple)
 
-## Overview
+## 🏗️ Architecture Overview
 
-BookScraper Pro is a production‑ready Python scraper that extracts book titles and prices from the demo bookstore. It includes exponential backoff retries, structured logging, and exports results to CSV, JSON, and SQLite — all containerized with Docker for easy deployment.
+BookScraper Pro is not just a script; it is a fully decoupled, 3-tier cloud application deployed across multiple free-tier providers.
 
----
+1. **Frontend (GitHub Pages):** A highly custom, dark-mode UI built with Tailwind CSS and Chart.js. Features a floating navigation bar, real-time search, and dynamic data visualizations.
+2. **Backend API (Render):** A Dockerized Python `FastAPI` microservice. Handles all business logic, database connections, and serves the REST API.
+3. **Database (Neon):** A serverless PostgreSQL database hosting the scraped book records. 
+4. **Scraper (Python):** An automated data pipeline using `BeautifulSoup` and `Pandas` to extract, clean, and push data to the database.
 
-## Features
-
-- 🔄 **Tenacity Retry** – Automatic retry with exponential backoff (2s, 4s, 8s) on 429/500 network errors.
-- 🧾 **Structured Logging** – Logs to console and `scraper.log` with timestamps and levels.
-- 📊 **Multi‑Format Output** – Saves data to `books.csv`, `books.json`, and `books.db` (SQLite).
-- 🐳 **Dockerized** – Simple one‑command containerization with `docker-compose`.
-- 🔧 **Configurable** – Target URL and request delay configurable via `.env`.
-
----
-
-## Architecture
-
+```text
+[ Web Scraper ] ---> [ Neon PostgreSQL DB ]
+                             |
+                             v
+[ GitHub Pages Frontend ] <---> [ Render FastAPI Backend ]
