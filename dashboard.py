@@ -40,6 +40,11 @@ st.markdown("""
         border-right: 1px solid #27272a;
     }
 
+    /* Hide the broken sidebar collapse button */
+    [data-testid="collapsedControl"] {
+        display: none;
+    }
+
     /* Dataframe: remove border, transparent background, no shadow */
     [data-testid="stDataFrame"] {
         border: none !important;
@@ -130,7 +135,7 @@ df = pd.DataFrame(books)
 # ------------------------------------------------------------------
 # Sidebar Search Filter
 # ------------------------------------------------------------------
-st.sidebar.title("🔍 Filters")
+st.sidebar.title("Filters")
 search_query = st.sidebar.text_input("Search by book title:", "")
 
 if search_query:
