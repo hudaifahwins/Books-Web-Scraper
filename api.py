@@ -3,6 +3,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import os
 from dotenv import load_dotenv
 
@@ -60,3 +61,6 @@ def get_single_book(book_id: int, db: Session = Depends(get_db)):
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
     return {"id": book.id, "title": book.title, "price": book.price}
+
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
