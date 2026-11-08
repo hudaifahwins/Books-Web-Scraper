@@ -1,11 +1,12 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: postgres_books
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: books_db
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5433:5432"
     volumes:
@@ -14,7 +15,9 @@ services:
       test: ["CMD-SHELL", "pg_isready -U admin -d books_db"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+    restart: on-failure
+    shm_size: '256mb'
 
   scraper:
     build: .
