@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,6 +27,13 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.05);
         }
         .glass-card:hover { border-color: rgba(255, 255, 255, 0.12); }
+
+        /* Hide scrollbar but keep functionality */
+        .hide-scrollbar {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="text-zinc-100 flex flex-col h-screen overflow-hidden selection:bg-indigo-500/30">
@@ -150,11 +157,11 @@
 
                     <!-- Table Container -->
                     <div class="glass-card rounded-xl overflow-hidden shrink-0 h-[260px] flex flex-col">
-                        <div class="flex-1 overflow-y-auto scrollable pr-2" style="scrollbar-gutter: stable;">
+                        <div class="flex-1 overflow-y-auto hide-scrollbar">
                             <table class="w-full text-left text-sm table-fixed">
                                 <colgroup>
-                                    <col class="w-[80%]">
-                                    <col class="w-[20%]">
+                                    <col class="w-[85%]">
+                                    <col class="w-[15%]">
                                 </colgroup>
                                 <thead class="bg-[#09090b]/90 text-[11px] uppercase tracking-wider text-zinc-500 border-b border-white/[0.08] sticky top-0 z-10 backdrop-blur-md">
                                     <tr>
@@ -424,8 +431,8 @@
                         }
                     },
                     scales: {
-                        x: { grid: { display: false, drawBorder: false }, ticks: { color: '#52525b', font: { family: 'Inter', size: 11 } } },
-                        y: { grid: { display: false, drawBorder: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 12, weight: 500 } } }
+                        x: { grid: { display: false, drawBorder: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } },
+                        y: { grid: { display: false, drawBorder: false }, ticks: { color: '#e4e4e7', font: { family: 'Inter', size: 12, weight: 500 } } }
                     }
                 }
             });
@@ -489,7 +496,7 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#52525b', font: { family: 'Inter', size: 11 } } },
+                        x: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } },
                         y: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } }
                     }
                 }
