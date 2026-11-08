@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
-# Hide all Streamlit chrome and remove padding for full-screen iframe
+# Hide Streamlit chrome and remove padding for full-screen iframe
 st.markdown("""
 <style>
     #MainMenu, header, footer {visibility: hidden;}
@@ -33,37 +33,57 @@ html_content = """
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-[#09090b] text-white font-['Inter'] m-0 p-0 w-full h-full flex">
+<body class="bg-[#050505] text-white font-sans antialiased flex h-screen overflow-hidden selection:bg-blue-500/30">
 
     <!-- Sidebar -->
-    <aside class="w-64 h-screen bg-[#18181b] border-r border-[#27272a] p-6 flex flex-col shrink-0">
-        <div class="text-2xl font-bold mb-8">📚 BookScraper Pro</div>
-        <input type="text" placeholder="Search books..." class="w-full bg-[#09090b] border border-[#27272a] rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 placeholder-gray-500" oninput="filterBooks(this.value)">
+    <aside class="w-64 h-screen bg-[#0a0a0a] border-r border-white/5 p-6 flex flex-col gap-8 shrink-0">
+        <!-- Minimalist logo -->
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+            </div>
+            <span class="text-lg font-semibold tracking-tight">BookScraper</span>
+        </div>
+
+        <!-- Pill-shaped search input -->
+        <div class="relative w-full">
+            <input type="text" placeholder="Search books..." class="w-full bg-[#111] border border-white/10 rounded-full px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all" oninput="filterBooks(this.value)">
+        </div>
     </aside>
 
     <!-- Main content -->
-    <main class="flex-1 h-screen overflow-y-auto p-10">
-        <h1 class="text-3xl font-semibold mb-8 tracking-tight">Enterprise Analytics</h1>
+    <main class="flex-1 p-10 overflow-y-auto relative">
+        <!-- Glowing background orb -->
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <!-- Header -->
+        <h1 class="text-4xl font-semibold tracking-tight mb-2">Enterprise Analytics</h1>
+        <p class="text-gray-500 text-sm mb-8">Real-time insights from your book collection</p>
 
         <!-- KPI Cards -->
-        <div class="grid grid-cols-3 gap-6">
-            <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-6">
+        <div class="grid grid-cols-3 gap-6 mt-8 relative">
+            <div class="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group hover:border-blue-500/50 transition-all">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
                 <div class="text-sm text-[#a1a1aa] uppercase tracking-wider mb-2">Total Books</div>
                 <div class="text-4xl font-semibold tracking-tight"><h2 id="total-books" class="inline">0</h2></div>
             </div>
-            <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-6">
+            <div class="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group hover:border-blue-500/50 transition-all">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
                 <div class="text-sm text-[#a1a1aa] uppercase tracking-wider mb-2">Average Price</div>
                 <div class="text-4xl font-semibold tracking-tight"><h2 id="avg-price" class="inline">£0.00</h2></div>
             </div>
-            <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-6">
+            <div class="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group hover:border-blue-500/50 transition-all">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
                 <div class="text-sm text-[#a1a1aa] uppercase tracking-wider mb-2">Most Expensive</div>
                 <div class="text-4xl font-semibold tracking-tight"><h2 id="max-price" class="inline">£0.00</h2></div>
             </div>
         </div>
 
         <!-- Chart -->
-        <div class="relative w-full h-[400px] mt-8">
-            <canvas id="booksChart"></canvas>
+        <div class="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 mt-8 shadow-2xl relative">
+            <div class="relative w-full h-[400px]">
+                <canvas id="booksChart"></canvas>
+            </div>
         </div>
     </main>
 
@@ -97,15 +117,22 @@ html_content = """
                 chart.destroy();
             }
 
-            chart = new Chart(document.getElementById('booksChart'), {
+            // Create gradient for bars
+            const ctx = document.getElementById('booksChart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, '#60a5fa');
+            gradient.addColorStop(1, '#3b82f6');
+
+            chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: top10.map(b => b.title),
                     datasets: [{
                         label: 'Price (£)',
                         data: top10.map(b => b.price),
-                        backgroundColor: '#6366f1',
-                        borderRadius: 4
+                        backgroundColor: gradient,
+                        borderRadius: 8,
+                        borderSkipped: false
                     }]
                 },
                 options: {
@@ -125,14 +152,14 @@ html_content = """
                             grid: { display: false },
                             ticks: {
                                 color: '#a1a1aa',
-                                font: { size: 12 }
+                                font: { size: 12, weight: '500' }
                             }
                         },
                         y: {
                             grid: { display: false },
                             ticks: {
-                                color: '#a1a1aa',
-                                font: { size: 12 }
+                                color: '#ffffff',
+                                font: { size: 12, weight: '600' }
                             }
                         }
                     }
