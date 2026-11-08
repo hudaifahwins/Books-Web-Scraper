@@ -8,6 +8,8 @@ Usage:
     python scraper.py
 """
 
+import logging
+import os
 import re
 import time
 from typing import Dict, List
@@ -16,18 +18,42 @@ from urllib.parse import urljoin
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 from tqdm import tqdm
 
+# Load environment variables
+load_dotenv()
+
 # Constants
-TARGET_URL = "http://books.toscrape.com"
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/119.0.0.0 Safari/537.36"
 )
 CSV_FILENAME = "books.csv"
-PAGE_DELAY_SECONDS = 1
 TOTAL_PAGES = 50
+
+# Environment-driven configuration
+TARGET_URL = os.getenv("TARGET_URL", "http://books.toscrape.com")
+REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "1"))
+
+# Logging configuration
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+file_handler = logging.FileHandler("scraper.log")
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 
 def fetch_page(url: str) -> str:
@@ -70,6 +96,7 @@ def parse_books(html: str) -> List[Dict[str, object]]:
     for article in soup.select("article.product_pod"):
         title_tag = article.select_one("h3 a")
         if title_tag is None:
+            logger.warning("Book article missing title link; skipping.")
             continue
 
         title = title_tag.get("title") or title_tag.get_text(strip=True)
@@ -124,6 +151,7 @@ def save_to_csv(data: List[Dict[str, object]], filename: str = CSV_FILENAME) -> 
 
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False)
+    logger.info("Saved %d books to %s", len(data), filename)
 
 
 def main() -> None:
@@ -135,35 +163,41 @@ def main() -> None:
         # Use tqdm to display a progress bar for the known total number of pages.
         with tqdm(total=TOTAL_PAGES, desc="Scraping pages", unit="page") as pbar:
             while url and pbar.n < TOTAL_PAGES:
-                print(f"Fetching {url} ...")
+                logger.info("Fetching %s ...", url)
                 html = fetch_page(url)
 
-                print("Parsing book data ...")
+                logger.info("Parsing book data ...")
                 books = parse_books(html)
                 all_books.extend(books)
 
                 next_url = get_next_page_url(html, url)
                 if next_url is None:
+                    logger.info("No next page found; stopping.")
                     break
 
                 # Respect the server: wait before the next request.
-                time.sleep(PAGE_DELAY_SECONDS)
+                logger.debug("Waiting %.2f seconds before next request.", REQUEST_DELAY)
+                time.sleep(REQUEST_DELAY)
                 url = next_url
                 pbar.update(1)
 
         if not all_books:
             raise ValueError("No books found.")
 
-        print(f"Saving {len(all_books)} books to {CSV_FILENAME} ...")
+        logger.info("Saving %d books to %s ...", len(all_books), CSV_FILENAME)
         save_to_csv(all_books)
-        print(f"Success: Scraped {len(all_books)} books and saved to {CSV_FILENAME}")
+        logger.info(
+            "Success: Scraped %d books and saved to %s",
+            len(all_books),
+            CSV_FILENAME,
+        )
 
     except requests.RequestException as exc:
-        print(f"Network error: {exc}")
+        logger.error("Network error: %s", exc)
     except (ValueError, AttributeError) as exc:
-        print(f"Parsing error: {exc}")
+        logger.error("Parsing error: %s", exc)
     except Exception as exc:
-        print(f"An unexpected error occurred: {exc}")
+        logger.error("An unexpected error occurred: %s", exc)
 
 
 if __name__ == "__main__":
