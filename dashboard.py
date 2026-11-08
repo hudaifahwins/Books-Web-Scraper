@@ -34,6 +34,19 @@ st.markdown("""
         max-width: 1200px;
     }
 
+    /* Ensure sidebar is visible and styled to match theme */
+    [data-testid="stSidebar"] {
+        background: #18181b;
+        border-right: 1px solid #27272a;
+    }
+
+    /* Dataframe: remove border, transparent background, no shadow */
+    [data-testid="stDataFrame"] {
+        border: none !important;
+        background: rgba(0, 0, 0, 0) !important;
+        box-shadow: none !important;
+    }
+
     /* Custom header */
     .custom-header {
         margin-bottom: 40px;
@@ -115,11 +128,22 @@ if not books:
 df = pd.DataFrame(books)
 
 # ------------------------------------------------------------------
+# Sidebar Search Filter
+# ------------------------------------------------------------------
+st.sidebar.title("🔍 Filters")
+search_query = st.sidebar.text_input("Search by book title:", "")
+
+if search_query:
+    filtered_df = df[df["title"].str.contains(search_query, case=False, na=False)]
+else:
+    filtered_df = df
+
+# ------------------------------------------------------------------
 # KPI Cards (flexbox HTML, no st.metric)
 # ------------------------------------------------------------------
-total_books = len(df)
-avg_price = df["price"].mean()
-max_price = df["price"].max()
+total_books = len(filtered_df)
+avg_price = filtered_df["price"].mean()
+max_price = filtered_df["price"].max()
 
 st.markdown(f"""
 <div class="kpi-container">
@@ -141,7 +165,8 @@ st.markdown(f"""
 # ------------------------------------------------------------------
 # Plotly Horizontal Bar Chart (Top 10 most expensive books)
 # ------------------------------------------------------------------
-top_10 = df.nlargest(10, "price")
+st.subheader("Top 10 Most Expensive Books")
+top_10 = filtered_df.nlargest(10, "price")
 
 fig = px.bar(
     top_10,
@@ -161,14 +186,23 @@ fig.update_layout(
     showlegend=False,
     bargap=0.4,
     font=dict(color="#ffffff"),
+    xaxis=dict(
+        showgrid=False,
+        zeroline=False,
+        showline=False,
+        tickfont=dict(size=14, color="#a1a1aa"),
+    ),
+    yaxis=dict(
+        showgrid=False,
+        zeroline=False,
+        showline=False,
+        tickfont=dict(size=14, color="#a1a1aa"),
+    ),
 )
-
-fig.update_xaxes(showgrid=False, zeroline=False, showline=False)
-fig.update_yaxes(showgrid=False, zeroline=False, showline=False)
 
 st.plotly_chart(fig, use_container_width=True)
 
 # ------------------------------------------------------------------
 # Data Table
 # ------------------------------------------------------------------
-st.dataframe(df, use_container_width=True, hide_index=True)
+st.dataframe(filtered_df, use_container_width=True, hide_index=True)
