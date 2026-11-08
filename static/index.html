@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,227 +8,199 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; background-color: #050505; }
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; background-color: #09090b; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
-        
-        /* Custom Scrollbar */
-        .scrollable::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scrollable::-webkit-scrollbar { width: 6px; }
         .scrollable::-webkit-scrollbar-track { background: transparent; }
         .scrollable::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
-        .scrollable::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
-        
-        /* Skeleton Loader */
-        .skeleton { background: linear-gradient(90deg, #171717 25%, #262626 50%, #171717 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .skeleton { background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        
-        /* Smooth Fade In */
         .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Ambient Glow */
-        .ambient-glow { background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%); }
-
-        /* Gradient Border Card */
-        .gradient-border { position: relative; background: #0a0a0a; background-clip: padding-box; border: 1px solid transparent; }
-        .gradient-border::before {
-            content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
-            margin: -1px; border-radius: inherit;
-            background: linear-gradient(to bottom right, rgba(255,255,255,0.1), rgba(99,102,241,0.2), rgba(255,255,255,0.05));
-            opacity: 0; transition: opacity 0.3s ease;
+        
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(24, 24, 27, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.05);
         }
-        .gradient-border:hover::before { opacity: 1; }
-
-        /* Backdrop Blur for Command Palette */
-        .backdrop-blur-heavy { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+        .glass-card:hover { border-color: rgba(255, 255, 255, 0.12); }
     </style>
 </head>
-<body class="text-[#ededed] flex flex-col h-screen overflow-hidden selection:bg-[#6366f1]/30">
+<body class="text-zinc-100 flex flex-col h-screen overflow-hidden selection:bg-indigo-500/30">
     
     <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar -->
-        <div class="w-[260px] bg-[#0a0a0a] border-r border-[#1f1f1f] p-5 flex flex-col gap-6 z-20 shrink-0">
-            <div class="flex items-center gap-3 px-2">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-bold text-white shadow-lg shadow-[#6366f1]/20">B</div>
-                <span class="text-[15px] font-semibold tracking-tight">BookScraper Pro</span>
+        <div class="w-[260px] bg-[#09090b] border-r border-white/[0.06] p-5 flex flex-col z-20 shrink-0">
+            <div class="flex items-center gap-3 px-2 mb-8">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">B</div>
+                <span class="text-sm font-semibold tracking-wide text-white">BookScraper Pro</span>
             </div>
             
-            <!-- Fake Search Bar (Triggers Command Palette) -->
-            <div class="relative w-full mt-2 group cursor-pointer" onclick="toggleCommandPalette()">
-                <svg class="absolute left-3 top-2.5 h-4 w-4 text-[#737373] group-hover:text-[#6366f1] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <div class="w-full bg-[#111111] border border-[#1f1f1f] rounded-lg pl-9 pr-12 py-2 text-sm text-[#737373] group-hover:border-[#333] transition-all">Search titles...</div>
-                <div class="absolute right-2 top-1.5 px-1.5 py-0.5 rounded bg-[#1f1f1f] border border-[#333] text-[10px] text-[#737373] font-medium pointer-events-none">⌘K</div>
-            </div>
-
-            <nav class="flex flex-col gap-1 mt-2">
-                <button id="nav-overview" onclick="switchTab('overview')" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#6366f1]/10 text-white text-sm font-medium border border-[#6366f1]/30 shadow-[0_0_15px_rgba(99,102,241,0.1)] w-full text-left transition-all">
-                    <svg class="w-4 h-4 text-[#6366f1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            <nav class="flex flex-col gap-1">
+                <button id="nav-overview" onclick="switchTab('overview')" class="flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06] text-white text-sm font-medium transition-all w-full text-left">
+                    <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     Overview
                 </button>
-                <button id="nav-analytics" onclick="switchTab('analytics')" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#a3a3a3] hover:text-white hover:bg-[#111111] text-sm font-medium transition-all w-full text-left">
+                <button id="nav-analytics" onclick="switchTab('analytics')" class="flex items-center gap-3 px-3 py-2 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.04] text-sm font-medium transition-all w-full text-left">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     Analytics
                 </button>
             </nav>
 
-            <div class="mt-auto bg-[#111111] rounded-xl p-4 border border-[#1f1f1f]">
-                <div class="text-[10px] text-[#737373] font-semibold mb-2 uppercase tracking-widest">System Status</div>
-                <div class="flex items-center gap-2 text-sm text-[#22c55e] font-medium">
-                    <div class="w-2 h-2 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></div>
-                    API Online
+            <div class="mt-auto">
+                <div class="p-3 bg-white/[0.02] rounded-lg border border-white/[0.05] flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500"></div>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-medium text-white">Founder</span>
+                        <span class="text-[10px] text-zinc-500">founder@bookscraper.com</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col h-full overflow-hidden relative">
-            <!-- Top Nav (Glassmorphism) -->
-            <div class="h-14 border-b border-[#1f1f1f] flex items-center justify-between px-8 bg-[#050505]/70 backdrop-blur-xl z-30 shrink-0">
-                <div class="flex items-center gap-2 text-sm text-[#737373]">
+            <!-- Ambient Background Glow -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none z-0"></div>
+
+            <!-- Top Nav -->
+            <div class="h-14 border-b border-white/[0.06] flex items-center justify-between px-8 bg-[#09090b]/80 backdrop-blur-md z-30 shrink-0">
+                <div class="flex items-center gap-2 text-sm text-zinc-500">
                     <span class="hover:text-white cursor-pointer transition-colors">Dashboard</span>
-                    <span class="text-[#333]">/</span>
-                    <span id="breadcrumb-active" class="text-[#ededed] font-medium">Overview</span>
+                    <span class="text-zinc-700">/</span>
+                    <span id="breadcrumb-active" class="text-zinc-200 font-medium">Overview</span>
                 </div>
-                <div class="flex items-center gap-5 relative">
-                    <button onclick="toggleDropdown('notifDropdown')" class="relative p-1.5 rounded-full hover:bg-[#1f1f1f] transition-colors focus:outline-none">
-                        <svg class="w-5 h-5 text-[#737373] hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                        <div class="absolute top-1 right-1 w-2 h-2 bg-[#ef4444] rounded-full border-2 border-[#050505]"></div>
-                    </button>
-                    <button onclick="toggleDropdown('profileDropdown')" class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] border border-[#333] cursor-pointer hover:ring-2 ring-[#6366f1]/50 transition-all focus:outline-none shadow-lg"></button>
-                    
-                    <!-- Dropdowns (Glassmorphism) -->
-                    <div id="notifDropdown" class="hidden absolute top-12 right-14 w-80 bg-[#111111]/90 backdrop-blur-xl border border-[#27272a] rounded-xl shadow-2xl p-4 z-50 fade-in">
-                        <div class="text-sm font-semibold text-white mb-3 flex justify-between items-center">
-                            Notifications
-                            <span class="text-[10px] font-medium text-[#6366f1] bg-[#6366f1]/10 px-2 py-0.5 rounded-md border border-[#6366f1]/20">2 New</span>
-                        </div>
-                        <div class="p-3 bg-[#050505]/50 rounded-lg border border-[#1f1f1f] hover:bg-[#1f1f1f]/50 transition-colors cursor-pointer">
-                            <div class="text-xs text-[#6366f1] font-medium mb-1">Scraper Completed</div>
-                            <div class="text-xs text-[#a3a3a3] leading-relaxed">Successfully scraped 1,000 books and synced to PostgreSQL.</div>
-                        </div>
+                
+                <div class="flex items-center gap-4">
+                    <!-- Search / Cmd+K -->
+                    <div class="relative w-64 group cursor-pointer" onclick="toggleCommandPalette()">
+                        <svg class="absolute left-2.5 top-2 h-4 w-4 text-zinc-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <div class="w-full bg-[#18181b] border border-white/[0.08] rounded-md pl-8 pr-10 py-1.5 text-xs text-zinc-500 group-hover:border-white/[0.15] transition-all">Search...</div>
+                        <div class="absolute right-2 top-1.5 px-1 py-0.5 rounded bg-white/[0.1] text-[9px] text-zinc-400 font-medium pointer-events-none">⌘K</div>
                     </div>
-                    <div id="profileDropdown" class="hidden absolute top-12 right-0 w-52 bg-[#111111]/90 backdrop-blur-xl border border-[#27272a] rounded-xl shadow-2xl p-1 z-50 fade-in">
-                        <div class="px-3 py-2 mb-1 border-b border-[#1f1f1f]">
-                            <div class="text-sm font-medium text-white">Founder</div>
-                            <div class="text-[11px] text-[#737373]">founder@bookscraper.com</div>
+                    
+                    <!-- Notification Bell -->
+                    <button onclick="toggleDropdown('notifDropdown')" class="relative p-1.5 rounded-md hover:bg-white/[0.05] transition-colors focus:outline-none">
+                        <svg class="w-4 h-4 text-zinc-400 hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <div class="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full border border-[#09090b]"></div>
+                    </button>
+                    
+                    <div id="notifDropdown" class="hidden absolute top-12 right-8 w-72 bg-[#18181b] border border-white/[0.08] rounded-lg shadow-2xl p-3 z-50 fade-in">
+                        <div class="text-xs font-semibold text-white mb-2">Notifications</div>
+                        <div class="p-2 bg-white/[0.02] rounded border border-white/[0.05]">
+                            <div class="text-[11px] text-indigo-400 font-medium">Scraper Completed</div>
+                            <div class="text-[11px] text-zinc-500 mt-1">Successfully synced 1,000 books to DB.</div>
                         </div>
-                        <a href="#" class="block px-3 py-2 text-sm text-[#ededed] hover:bg-[#1f1f1f] rounded-md transition-colors">Profile Settings</a>
-                        <a href="#" class="block px-3 py-2 text-sm text-[#ededed] hover:bg-[#1f1f1f] rounded-md transition-colors">Billing</a>
-                        <div class="h-px bg-[#1f1f1f] my-1"></div>
-                        <a href="#" class="block px-3 py-2 text-sm text-[#ef4444] hover:bg-[#1f1f1f] rounded-md transition-colors">Sign out</a>
                     </div>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto scrollable p-8 relative ambient-glow">
+            <div class="flex-1 overflow-y-auto scrollable p-8 relative z-10">
                 <!-- OVERVIEW TAB -->
-                <div id="view-overview" class="relative z-10 max-w-[1200px] mx-auto flex flex-col gap-6 h-full pb-8 fade-in">
+                <div id="view-overview" class="max-w-[1100px] mx-auto flex flex-col gap-6 h-full pb-8 fade-in">
                     <div>
-                        <h1 class="text-[28px] font-semibold tracking-tight text-white mb-1">Enterprise Analytics</h1>
-                        <p class="text-sm text-[#a3a3a3]">Real-time insights from your book collection.</p>
+                        <h1 class="text-2xl font-semibold tracking-tight text-white mb-1">Enterprise Analytics</h1>
+                        <p class="text-sm text-zinc-400">Real-time insights from your book collection.</p>
                     </div>
 
+                    <!-- KPI Row -->
                     <div class="grid grid-cols-3 gap-5 shrink-0">
-                        <!-- KPI Card 1 -->
-                        <div class="gradient-border rounded-2xl p-6 relative overflow-hidden group shadow-xl transition-all duration-300">
-                            <svg class="absolute top-6 right-6 w-12 h-12 text-[#27272a] opacity-50 group-hover:text-[#6366f1]/20 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                            <div class="text-[11px] uppercase tracking-widest text-[#737373] font-semibold mb-2">Total Books</div>
-                            <div class="text-4xl font-semibold text-white tabular-nums tracking-tight" id="total-books"><div class="h-10 w-24 skeleton rounded"></div></div>
+                        <div class="glass-card rounded-xl p-5 relative overflow-hidden group">
+                            <div class="text-xs font-medium text-zinc-500 mb-2">Total Books</div>
+                            <div class="text-3xl font-semibold text-white tabular-nums tracking-tight" id="total-books"><div class="h-8 w-24 skeleton rounded"></div></div>
                             <div class="mt-4 flex items-center gap-2">
-                                <span class="text-[#22c55e] text-xs font-medium bg-[#22c55e]/10 px-2 py-0.5 rounded-full flex items-center gap-1 border border-[#22c55e]/20">
+                                <span class="text-[#10b981] text-[11px] font-medium bg-[#10b981]/10 px-1.5 py-0.5 rounded flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>+12.5%
                                 </span>
-                                <span class="text-[#737373] text-xs">vs last month</span>
+                                <span class="text-zinc-500 text-[11px]">vs last month</span>
                             </div>
                         </div>
-                        <!-- KPI Card 2 -->
-                        <div class="gradient-border rounded-2xl p-6 relative overflow-hidden group shadow-xl transition-all duration-300">
-                            <svg class="absolute top-6 right-6 w-12 h-12 text-[#27272a] opacity-50 group-hover:text-[#6366f1]/20 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <div class="text-[11px] uppercase tracking-widest text-[#737373] font-semibold mb-2">Average Price</div>
-                            <div class="text-4xl font-semibold text-white tabular-nums tracking-tight" id="avg-price"><div class="h-10 w-24 skeleton rounded"></div></div>
+                        <div class="glass-card rounded-xl p-5 relative overflow-hidden group">
+                            <div class="text-xs font-medium text-zinc-500 mb-2">Average Price</div>
+                            <div class="text-3xl font-semibold text-white tabular-nums tracking-tight" id="avg-price"><div class="h-8 w-24 skeleton rounded"></div></div>
                             <div class="mt-4 flex items-center gap-2">
-                                <span class="text-[#22c55e] text-xs font-medium bg-[#22c55e]/10 px-2 py-0.5 rounded-full flex items-center gap-1 border border-[#22c55e]/20">
+                                <span class="text-[#10b981] text-[11px] font-medium bg-[#10b981]/10 px-1.5 py-0.5 rounded flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>+3.2%
                                 </span>
-                                <span class="text-[#737373] text-xs">vs last month</span>
+                                <span class="text-zinc-500 text-[11px]">vs last month</span>
                             </div>
                         </div>
-                        <!-- KPI Card 3 -->
-                        <div class="gradient-border rounded-2xl p-6 relative overflow-hidden group shadow-xl transition-all duration-300">
-                            <svg class="absolute top-6 right-6 w-12 h-12 text-[#27272a] opacity-50 group-hover:text-[#ef4444]/20 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                            <div class="text-[11px] uppercase tracking-widest text-[#737373] font-semibold mb-2">Most Expensive</div>
-                            <div class="text-4xl font-semibold text-white tabular-nums tracking-tight" id="max-price"><div class="h-10 w-24 skeleton rounded"></div></div>
+                        <div class="glass-card rounded-xl p-5 relative overflow-hidden group">
+                            <div class="text-xs font-medium text-zinc-500 mb-2">Most Expensive</div>
+                            <div class="text-3xl font-semibold text-white tabular-nums tracking-tight" id="max-price"><div class="h-8 w-24 skeleton rounded"></div></div>
                             <div class="mt-4 flex items-center gap-2">
-                                <span class="text-[#ef4444] text-xs font-medium bg-[#ef4444]/10 px-2 py-0.5 rounded-full flex items-center gap-1 border border-[#ef4444]/20">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>-1.4%
+                                <span class="text-[#ef4444] text-[11px] font-medium bg-[#ef4444]/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6 6"></path></svg>-1.4%
                                 </span>
-                                <span class="text-[#737373] text-xs">vs last month</span>
+                                <span class="text-zinc-500 text-[11px]">vs last month</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Chart Container -->
-                    <div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-2xl p-6 shadow-xl flex-1 min-h-[380px] flex flex-col relative overflow-hidden">
-                        <h3 class="text-[15px] font-semibold text-white mb-6">Top 10 Most Expensive Books</h3>
+                    <div class="glass-card rounded-xl p-6 flex-1 min-h-[350px] flex flex-col relative overflow-hidden">
+                        <h3 class="text-sm font-medium text-white mb-6">Top 10 Most Expensive Books</h3>
                         <div class="flex-1 relative w-full">
                             <canvas id="booksChart"></canvas>
                         </div>
                     </div>
 
                     <!-- Table Container -->
-                    <div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-2xl shadow-xl overflow-hidden shrink-0 h-[280px] flex flex-col">
+                    <div class="glass-card rounded-xl overflow-hidden shrink-0 h-[260px] flex flex-col">
                         <div class="flex-1 overflow-y-auto scrollable">
-                            <table class="w-full text-left text-sm text-[#a3a3a3] table-fixed pr-2">
+                            <table class="w-full text-left text-sm table-fixed">
                                 <colgroup>
-                                    <col class="w-[75%]">
-                                    <col class="w-[25%]">
+                                    <col class="w-[80%]">
+                                    <col class="w-[20%]">
                                 </colgroup>
-                                <thead class="bg-[#111111] text-[11px] uppercase tracking-wider text-[#737373] border-b border-[#1f1f1f] sticky top-0 backdrop-blur-md z-10">
+                                <thead class="bg-[#09090b]/90 text-[11px] uppercase tracking-wider text-zinc-500 border-b border-white/[0.08] sticky top-0 z-10 backdrop-blur-md">
                                     <tr>
-                                        <th class="px-6 py-4 font-medium cursor-pointer hover:text-white transition-colors" onclick="sortTable('title')">Title <span id="sort-icon-title">↓</span></th>
-                                        <th class="px-6 py-4 font-medium text-right cursor-pointer hover:text-white transition-colors" onclick="sortTable('price')">Price <span id="sort-icon-price"></span></th>
+                                        <th class="px-5 py-3 font-medium cursor-pointer hover:text-white transition-colors" onclick="sortTable('title')">Title <span id="sort-icon-title">↓</span></th>
+                                        <th class="px-5 py-3 font-medium text-right cursor-pointer hover:text-white transition-colors" onclick="sortTable('price')">Price <span id="sort-icon-price"></span></th>
                                     </tr>
                                 </thead>
-                                <tbody id="table-body" class="divide-y divide-[#1f1f1f]">
-                                    <!-- JS populates here -->
+                                <tbody id="table-body" class="divide-y divide-white/[0.04]">
                                 </tbody>
                             </table>
-                            <div id="empty-state" class="hidden flex-col items-center justify-center py-12 text-[#737373]">
-                                <svg class="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <p class="text-sm">No books found matching your search.</p>
+                            <div id="empty-state" class="hidden flex-col items-center justify-center py-8 text-zinc-500">
+                                <p class="text-sm">No results found.</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ANALYTICS TAB -->
-                <div id="view-analytics" class="hidden relative z-10 max-w-[1200px] mx-auto flex flex-col gap-6 h-full pb-8 fade-in">
+                <div id="view-analytics" class="hidden max-w-[1100px] mx-auto flex flex-col gap-6 h-full pb-8 fade-in">
                     <div>
-                        <h1 class="text-[28px] font-semibold tracking-tight text-white mb-1">Deep Analytics</h1>
-                        <p class="text-sm text-[#a3a3a3]">Advanced metrics and historical trends.</p>
+                        <h1 class="text-2xl font-semibold tracking-tight text-white mb-1">Deep Analytics</h1>
+                        <p class="text-sm text-zinc-400">Data distribution and historical trends.</p>
                     </div>
-                    <div class="grid grid-cols-2 gap-6 flex-1 min-h-[400px]">
-                        <div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-2xl p-8 shadow-xl flex flex-col relative overflow-hidden">
-                            <h3 class="text-[15px] font-semibold text-white mb-6">Price Distribution</h3>
+                    <div class="grid grid-cols-2 gap-5 flex-1 min-h-[350px]">
+                        <div class="glass-card rounded-xl p-6 flex flex-col relative overflow-hidden">
+                            <h3 class="text-sm font-medium text-white mb-6">Price Distribution</h3>
                             <div class="flex-1 relative w-full flex items-center justify-center">
                                 <canvas id="priceDistChart"></canvas>
                             </div>
                         </div>
-                        <div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-2xl p-8 shadow-xl flex flex-col relative overflow-hidden">
-                            <h3 class="text-[15px] font-semibold text-white mb-6">Top 5 Cheapest Books</h3>
+                        <div class="glass-card rounded-xl p-6 flex flex-col relative overflow-hidden">
+                            <h3 class="text-sm font-medium text-white mb-6">Top 5 Cheapest Books</h3>
                             <div class="flex-1 relative w-full">
                                 <canvas id="cheapestChart"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
     
-    <div class="h-8 bg-[#050505] border-t border-[#1f1f1f] flex items-center justify-between px-6 text-[11px] text-[#737373] z-20 shrink-0">
+    <!-- Status Bar -->
+    <div class="h-8 bg-[#09090b] border-t border-white/[0.06] flex items-center justify-between px-6 text-[10px] text-zinc-500 z-20 shrink-0">
         <div class="flex items-center gap-4">
-            <span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></div> Connected</span>
+            <span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></div> Connected</span>
             <span class="hidden sm:inline">PostgreSQL v15</span>
         </div>
         <div class="flex items-center gap-4">
@@ -237,20 +209,13 @@
         </div>
     </div>
 
-    <!-- Command Palette Modal -->
-    <div id="commandPalette" class="hidden fixed inset-0 bg-[#000000]/60 backdrop-blur-heavy z-50 flex items-start justify-center pt-[15vh]">
-        <div class="bg-[#111111] border border-[#27272a] rounded-xl shadow-2xl w-full max-w-xl overflow-hidden fade-in">
-            <div class="flex items-center px-4 py-3 border-b border-[#27272a]">
-                <svg class="w-5 h-5 text-[#737373] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" id="commandInput" placeholder="Search books or commands..." class="w-full bg-transparent border-none text-white focus:outline-none placeholder-[#737373] text-[15px]" autocomplete="off">
-                <div class="text-[10px] text-[#737373] border border-[#333] rounded px-1.5 py-0.5 ml-2">ESC</div>
-            </div>
-            <div class="max-h-[300px] overflow-y-auto scrollable p-2">
-                <div class="text-[11px] uppercase tracking-wider text-[#737373] font-medium px-3 py-2">Suggestions</div>
-                <div class="flex items-center gap-3 px-3 py-2 hover:bg-[#1f1f1f] rounded-lg cursor-pointer transition-colors" onclick="closeCommandPalette()">
-                    <svg class="w-4 h-4 text-[#6366f1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                    <span class="text-sm text-[#ededed]">Search all books</span>
-                </div>
+    <!-- Command Palette -->
+    <div id="commandPalette" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-[15vh]">
+        <div class="bg-[#18181b] border border-white/[0.1] rounded-xl shadow-2xl w-full max-w-lg overflow-hidden fade-in">
+            <div class="flex items-center px-4 py-3 border-b border-white/[0.08]">
+                <svg class="w-4 h-4 text-zinc-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="commandInput" placeholder="Search books..." class="w-full bg-transparent border-none text-white focus:outline-none placeholder-zinc-500 text-sm" autocomplete="off">
+                <div class="text-[10px] text-zinc-500 border border-white/10 rounded px-1.5 py-0.5 ml-2">ESC</div>
             </div>
         </div>
     </div>
@@ -261,7 +226,6 @@
         let myChart = null;
         let analyticsCharts = [];
 
-        // Animated Number Counter
         function animateValue(obj, start, end, duration, isCurrency) {
             let startTimestamp = null;
             const step = (timestamp) => {
@@ -273,14 +237,11 @@
                 } else {
                     obj.innerHTML = Math.floor(currentVal).toLocaleString();
                 }
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
+                if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
         }
 
-        // Command Palette Logic
         function toggleCommandPalette() {
             const modal = document.getElementById('commandPalette');
             if (modal.classList.contains('hidden')) {
@@ -290,18 +251,11 @@
                 modal.classList.add('hidden');
             }
         }
-        function closeCommandPalette() {
-            document.getElementById('commandPalette').classList.add('hidden');
-        }
+        function closeCommandPalette() { document.getElementById('commandPalette').classList.add('hidden'); }
 
         document.addEventListener('keydown', function(e) {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                toggleCommandPalette();
-            }
-            if (e.key === 'Escape') {
-                closeCommandPalette();
-            }
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); toggleCommandPalette(); }
+            if (e.key === 'Escape') closeCommandPalette();
         });
 
         function switchTab(tab) {
@@ -313,19 +267,16 @@
             const btnOverview = document.getElementById('nav-overview');
             const btnAnalytics = document.getElementById('nav-analytics');
             
-            const activeClasses = "flex items-center gap-3 px-3 py-2 rounded-lg bg-[#6366f1]/10 text-white text-sm font-medium border border-[#6366f1]/30 shadow-[0_0_15px_rgba(99,102,241,0.1)] w-full text-left transition-all";
-            const inactiveClasses = "flex items-center gap-3 px-3 py-2 rounded-lg text-[#a3a3a3] hover:text-white hover:bg-[#111111] text-sm font-medium transition-all w-full text-left";
-
             if (tab === 'overview') {
-                btnOverview.className = activeClasses;
-                btnOverview.querySelector('svg').classList.add('text-[#6366f1]');
-                btnAnalytics.className = inactiveClasses;
-                btnAnalytics.querySelector('svg').classList.remove('text-[#6366f1]');
+                btnOverview.className = "flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06] text-white text-sm font-medium transition-all w-full text-left";
+                btnOverview.querySelector('svg').classList.add('text-indigo-400');
+                btnAnalytics.className = "flex items-center gap-3 px-3 py-2 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.04] text-sm font-medium transition-all w-full text-left";
+                btnAnalytics.querySelector('svg').classList.remove('text-indigo-400');
             } else {
-                btnAnalytics.className = activeClasses;
-                btnAnalytics.querySelector('svg').classList.add('text-[#6366f1]');
-                btnOverview.className = inactiveClasses;
-                btnOverview.querySelector('svg').classList.remove('text-[#6366f1]');
+                btnAnalytics.className = "flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06] text-white text-sm font-medium transition-all w-full text-left";
+                btnAnalytics.querySelector('svg').classList.add('text-indigo-400');
+                btnOverview.className = "flex items-center gap-3 px-3 py-2 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.04] text-sm font-medium transition-all w-full text-left";
+                btnOverview.querySelector('svg').classList.remove('text-indigo-400');
                 renderAnalytics();
             }
         }
@@ -334,15 +285,11 @@
             const dropdown = document.getElementById(id);
             const isHidden = dropdown.classList.contains('hidden');
             document.getElementById('notifDropdown').classList.add('hidden');
-            document.getElementById('profileDropdown').classList.add('hidden');
             if (isHidden) dropdown.classList.remove('hidden');
         }
 
         document.addEventListener('click', function(event) {
-            if (!event.target.closest('button')) {
-                document.getElementById('notifDropdown').classList.add('hidden');
-                document.getElementById('profileDropdown').classList.add('hidden');
-            }
+            if (!event.target.closest('button')) document.getElementById('notifDropdown').classList.add('hidden');
         });
 
         function debounce(func, wait) {
@@ -365,21 +312,16 @@
                 allData = data;
                 updateUI();
 
-                // Command Palette Search
                 document.getElementById('commandInput').addEventListener('input', debounce((e) => {
                     const query = e.target.value.toLowerCase();
                     const filtered = allData.filter(b => b.title.toLowerCase().includes(query));
                     updateUI(filtered);
                     closeCommandPalette();
                 }, 150));
-
-            } catch (e) {
-                console.error("Error fetching data:", e);
-            }
+            } catch (e) {}
         }
 
         function updateUI(dataToRender = allData) {
-            // Animate KPIs
             animateValue(document.getElementById('total-books'), 0, dataToRender.length, 1000, false);
             const total = dataToRender.reduce((sum, book) => sum + book.price, 0);
             const avg = dataToRender.length ? (total / dataToRender.length) : 0;
@@ -416,9 +358,9 @@
             });
 
             const rows = sortedData.map(book => `
-                <tr class="hover:bg-[#1f1f1f]/50 transition-colors group cursor-pointer">
-                    <td class="px-6 py-4 text-[#ededed] font-medium group-hover:text-white transition-colors truncate">${book.title}</td>
-                    <td class="px-6 py-4 text-right text-[#6366f1] font-medium tabular-nums text-[13px] group-hover:drop-shadow-[0_0_8px_rgba(99,102,241,0.5)] transition-all">£${book.price.toFixed(2)}</td>
+                <tr class="hover:bg-white/[0.04] transition-colors group cursor-pointer">
+                    <td class="px-5 py-3 text-zinc-300 group-hover:text-white truncate">${book.title}</td>
+                    <td class="px-5 py-3 text-right text-zinc-400 group-hover:text-white font-mono tabular-nums transition-colors">£${book.price.toFixed(2)}</td>
                 </tr>
             `).join('');
             
@@ -445,9 +387,10 @@
                 return;
             }
 
+            // The Vibrant Indigo Gradient for the Chart
             const gradient = ctx.createLinearGradient(0, 0, 800, 0);
-            gradient.addColorStop(0, '#4f46e5');
-            gradient.addColorStop(1, '#818cf8');
+            gradient.addColorStop(0, '#6366f1'); // Indigo
+            gradient.addColorStop(1, '#a855f7'); // Purple
 
             myChart = new Chart(ctx, {
                 type: 'bar',
@@ -458,7 +401,7 @@
                         backgroundColor: gradient,
                         borderRadius: 4,
                         borderSkipped: false,
-                        barThickness: 6
+                        barThickness: 8 // Ultra-thin
                     }]
                 },
                 options: {
@@ -470,13 +413,13 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(10,10,10,0.9)',
+                            backgroundColor: 'rgba(24, 24, 27, 0.9)',
                             titleColor: '#fff',
-                            bodyColor: '#a3a3a3',
-                            borderColor: '#333',
+                            bodyColor: '#a1a1aa',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
                             borderWidth: 1,
-                            padding: 12,
-                            cornerRadius: 8,
+                            padding: 10,
+                            cornerRadius: 6,
                             displayColors: false,
                             callbacks: {
                                 label: function(context) { return '£' + context.raw.toFixed(2); }
@@ -484,8 +427,8 @@
                         }
                     },
                     scales: {
-                        x: { grid: { display: false, drawBorder: false }, ticks: { color: '#737373', font: { family: 'Inter', size: 11 } } },
-                        y: { grid: { display: false, drawBorder: false }, ticks: { color: '#ededed', font: { family: 'Inter', size: 12, weight: 500 } } }
+                        x: { grid: { display: false, drawBorder: false }, ticks: { color: '#52525b', font: { family: 'Inter', size: 11 } } },
+                        y: { grid: { display: false, drawBorder: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 12, weight: 500 } } }
                     }
                 }
             });
@@ -493,7 +436,6 @@
 
         function renderAnalytics() {
             if (!allData || allData.length === 0) return;
-            
             analyticsCharts.forEach(c => c.destroy());
             analyticsCharts = [];
 
@@ -508,7 +450,7 @@
                     labels: ['Budget (<£20)', 'Mid-Range (£20-£40)', 'Premium (>£40)'],
                     datasets: [{
                         data: [budget, mid, premium],
-                        backgroundColor: ['#6366f1', '#8b5cf6', '#ef4444'],
+                        backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899'], // Beautiful fintech colors
                         borderWidth: 0,
                         hoverOffset: 4
                     }]
@@ -519,7 +461,7 @@
                     plugins: { 
                         legend: { 
                             position: 'bottom', 
-                            labels: { color: '#a3a3a3', font: { family: 'Inter', size: 12 }, padding: 20, usePointStyle: true, boxWidth: 8 } 
+                            labels: { color: '#a1a1aa', font: { family: 'Inter', size: 12 }, usePointStyle: true, boxWidth: 6, padding: 20 } 
                         } 
                     },
                     cutout: '75%'
@@ -536,10 +478,10 @@
                     labels: cheapest.map(b => b.title),
                     datasets: [{
                         data: cheapest.map(b => b.price),
-                        backgroundColor: '#22c55e',
+                        backgroundColor: '#10b981', // Emerald Green
                         borderRadius: 4,
                         borderSkipped: false,
-                        barThickness: 6
+                        barThickness: 8
                     }]
                 },
                 options: {
@@ -548,8 +490,8 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#737373', font: { family: 'Inter', size: 11 } } },
-                        y: { grid: { display: false }, ticks: { color: '#ededed', font: { family: 'Inter', size: 11 } } }
+                        x: { grid: { display: false }, ticks: { color: '#52525b', font: { family: 'Inter', size: 11 } } },
+                        y: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } } }
                     }
                 }
             });
