@@ -1056,6 +1056,401 @@ body,
 }
 
 </style>
+<style id="bookscraper-doppler-aurora-v1">
+/* BOOKSCRAPER_DOPPLER_AURORA_V1 */
+
+:root {
+    --bg-base: #090713;
+    --bg-surface: #111020;
+    --bg-surface-hover: #1a1730;
+    --border-subtle: rgba(167, 139, 250, 0.13);
+    --border-strong: rgba(167, 139, 250, 0.32);
+    --text-primary: #f5f3ff;
+    --text-secondary: #aaa5c2;
+    --text-muted: #77718f;
+    --accent-indigo: #a78bfa;
+    --accent-emerald: #34d399;
+    --accent-rose: #fb7185;
+}
+
+html {
+    background: #090713 !important;
+}
+
+body {
+    background:
+        radial-gradient(ellipse at 72% 0%, rgba(91, 33, 182, 0.17), transparent 42%),
+        radial-gradient(ellipse at 5% 75%, rgba(30, 64, 175, 0.12), transparent 40%),
+        #090713 !important;
+    color: #f5f3ff;
+    isolation: isolate;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: -25%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at 28% 20%, rgba(124, 58, 237, 0.13), transparent 35%),
+        radial-gradient(ellipse at 75% 35%, rgba(59, 130, 246, 0.10), transparent 38%),
+        radial-gradient(ellipse at 55% 85%, rgba(217, 70, 239, 0.07), transparent 35%);
+    filter: blur(38px);
+    animation: doppler-atmosphere 18s ease-in-out infinite alternate;
+}
+
+body > div,
+body > footer {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes doppler-atmosphere {
+    from {
+        transform: translate3d(-2%, -1%, 0) scale(1);
+    }
+    to {
+        transform: translate3d(2%, 2%, 0) scale(1.08);
+    }
+}
+
+/* Sidebar */
+
+aside {
+    background: rgba(12, 10, 24, 0.91) !important;
+    border-color: rgba(167, 139, 250, 0.14) !important;
+    backdrop-filter: blur(24px);
+}
+
+aside > div:first-child {
+    border-color: rgba(167, 139, 250, 0.14) !important;
+}
+
+aside > div:first-child > div:first-child {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1 55%, #3b82f6) !important;
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.38) !important;
+    border-radius: 11px !important;
+}
+
+aside nav button {
+    border-radius: 10px !important;
+    transition: background 180ms ease, border-color 180ms ease,
+                color 180ms ease, transform 180ms ease !important;
+}
+
+aside nav button:hover {
+    transform: translateX(3px);
+}
+
+aside nav button.bg-\[var\(--bg-surface\)\] {
+    background: linear-gradient(110deg, rgba(139, 92, 246, 0.19), rgba(99, 102, 241, 0.07)) !important;
+    border-color: rgba(167, 139, 250, 0.25) !important;
+}
+
+/* Top navigation */
+
+main > header {
+    background: rgba(12, 10, 24, 0.78) !important;
+    border-color: rgba(167, 139, 250, 0.14) !important;
+    backdrop-filter: blur(24px);
+}
+
+main > header button {
+    border-radius: 10px !important;
+    background: rgba(24, 21, 43, 0.8) !important;
+}
+
+main > header button:hover {
+    border-color: rgba(167, 139, 250, 0.4) !important;
+}
+
+/* Page headings */
+
+#view-overview h1,
+#view-analytics h1 {
+    color: #f5f3ff !important;
+    letter-spacing: -0.045em !important;
+    font-weight: 750 !important;
+}
+
+#view-overview > div:first-child p,
+#view-analytics > div:first-child p {
+    color: #aaa5c2 !important;
+}
+
+/* Dashboard cards and chart panels */
+
+#view-overview > .grid > div,
+#view-analytics > .grid > div,
+#view-overview > div:nth-child(3),
+#view-overview > div:nth-child(4) {
+    background: linear-gradient(
+        145deg,
+        rgba(24, 21, 43, 0.94),
+        rgba(15, 13, 29, 0.96)
+    ) !important;
+    border: 1px solid rgba(167, 139, 250, 0.15) !important;
+    border-radius: 17px !important;
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.17),
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    transition:
+        border-color 220ms ease,
+        box-shadow 220ms ease,
+        transform 220ms ease;
+}
+
+#view-overview > .grid > div:hover,
+#view-analytics > .grid > div:hover {
+    border-color: rgba(167, 139, 250, 0.32) !important;
+    box-shadow:
+        0 15px 38px rgba(0, 0, 0, 0.24),
+        0 0 24px rgba(139, 92, 246, 0.055);
+    transform: translateY(-2px);
+}
+
+/* KPI details */
+
+#view-overview > .grid > div,
+#view-analytics > .grid > div {
+    position: relative;
+    overflow: hidden;
+}
+
+#view-overview > .grid > div::before,
+#view-analytics > .grid > div::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        #8b5cf6,
+        #60a5fa,
+        #c084fc,
+        transparent
+    );
+    opacity: 0.75;
+}
+
+#total-books,
+#avg-price,
+#max-price,
+#median-price,
+#min-price,
+#price-range,
+#doughnut-center-count {
+    color: #f5f3ff !important;
+    letter-spacing: -0.045em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Chart titles and labels */
+
+#view-overview h3,
+#view-analytics h3 {
+    color: #eeeaff !important;
+    letter-spacing: -0.02em;
+}
+
+canvas {
+    filter: saturate(1.08);
+}
+
+/* Inventory table */
+
+#view-overview > div:nth-child(4) {
+    overflow: hidden;
+}
+
+#view-overview table thead {
+    background: rgba(19, 16, 35, 0.97) !important;
+}
+
+#view-overview table th {
+    color: #a9a2c5 !important;
+    letter-spacing: 0.075em;
+    font-size: 10px;
+}
+
+#view-overview table tbody tr {
+    transition: background 160ms ease;
+}
+
+#view-overview table tbody tr:hover {
+    background: rgba(139, 92, 246, 0.09) !important;
+}
+
+#view-overview table tbody td {
+    border-color: rgba(167, 139, 250, 0.09) !important;
+}
+
+/* Status bar */
+
+body > footer {
+    background: rgba(12, 10, 24, 0.96) !important;
+    border-color: rgba(167, 139, 250, 0.14) !important;
+    backdrop-filter: blur(18px);
+}
+
+/* Command palette */
+
+#commandPalette > div {
+    background: #151229 !important;
+    border-color: rgba(167, 139, 250, 0.3) !important;
+    box-shadow: 0 25px 90px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Scrollbars remain functionally intact */
+
+.page-scroll-hidden,
+.table-scroll-hidden {
+    overscroll-behavior: contain;
+}
+
+/* Responsive refinements */
+
+@media (max-width: 900px) {
+    main > header {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    main > div.page-scroll-hidden {
+        padding: 20px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    main > header {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+
+    main > header button {
+        width: auto !important;
+    }
+
+    main > div.page-scroll-hidden {
+        padding: 14px !important;
+    }
+
+    #view-overview,
+    #view-analytics {
+        gap: 16px !important;
+    }
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+    body::before {
+        animation: none !important;
+    }
+
+    #view-overview > .grid > div,
+    #view-analytics > .grid > div,
+    aside nav button {
+        transition: none !important;
+    }
+}
+</style>
+
+<style id="bookscraper-kpi-polish-v1">
+/* BOOKSCRAPER_KPI_POLISH_V1 */
+
+/* KPI labels */
+#view-overview > .grid > div > div:first-child > span {
+    font-size: 10px !important;
+    font-weight: 750 !important;
+    letter-spacing: 0.12em !important;
+    color: #aaa5c2 !important;
+}
+
+/* KPI icons */
+#view-overview > .grid > div > div:first-child > svg {
+    width: 17px !important;
+    height: 17px !important;
+    opacity: 0.9;
+}
+
+/* KPI values */
+#total-books,
+#avg-price,
+#max-price {
+    font-size: clamp(28px, 2.4vw, 34px) !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.065em !important;
+    line-height: 1.2 !important;
+    color: #f5f3ff !important;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Subtle card hover */
+#view-overview > .grid > div {
+    transition:
+        transform 220ms ease,
+        border-color 220ms ease,
+        box-shadow 220ms ease !important;
+}
+
+#view-overview > .grid > div:hover {
+    transform: translateY(-3px);
+    border-color: rgba(167, 139, 250, 0.35) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #view-overview > .grid > div {
+        transition: none !important;
+    }
+}
+</style>
+
+<style id="bookscraper-chart-polish-v1">
+/* BOOKSCRAPER_CHART_POLISH_V1 */
+
+#view-overview > div:nth-child(3),
+#view-analytics > div:nth-child(3),
+#view-analytics > div:nth-child(4) {
+    background:
+        linear-gradient(145deg,
+            rgba(24, 21, 43, .96),
+            rgba(15, 13, 29, .98)) !important;
+    border: 1px solid rgba(167, 139, 250, .16) !important;
+    border-radius: 18px !important;
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, .18),
+        inset 0 1px 0 rgba(255, 255, 255, .025) !important;
+}
+
+#view-overview > div:nth-child(3) h3,
+#view-analytics h3 {
+    color: #f0ecff !important;
+    font-weight: 750 !important;
+    letter-spacing: -.025em !important;
+}
+
+#view-overview canvas,
+#view-analytics canvas {
+    filter: saturate(1.12) contrast(1.025);
+    transition: filter 220ms ease;
+}
+
+#view-overview canvas:hover,
+#view-analytics canvas:hover {
+    filter: saturate(1.2) contrast(1.04)
+            drop-shadow(0 0 10px rgba(139, 92, 246, .16));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #view-overview canvas,
+    #view-analytics canvas {
+        transition: none !important;
+    }
+}
+</style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden selection:bg-[var(--accent-indigo)]/30">
     
