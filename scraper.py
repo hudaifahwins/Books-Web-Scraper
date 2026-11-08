@@ -2,15 +2,13 @@
 Production-ready web scraper for books.toscrape.com.
 
 This script fetches all pages of the books catalogue, extracts each
-book's title and price, and saves the data to a CSV file.
-
-Usage:
-    python scraper.py
+book's title and price, and saves the data to CSV, JSON, and SQLite.
 """
 
 import logging
 import os
 import re
+import sqlite3
 import time
 from typing import Dict, List
 from urllib.parse import urljoin
@@ -19,6 +17,12 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 from tqdm import tqdm
 
 # Load environment variables
@@ -31,6 +35,9 @@ USER_AGENT = (
     "Chrome/119.0.0.0 Safari/537.36"
 )
 CSV_FILENAME = "books.csv"
+JSON_FILENAME = "books.json"
+SQLITE_DB_FILENAME = "books.db"
+TABLE_NAME = "books"
 TOTAL_PAGES = 50
 
 # Environment-driven configuration
@@ -56,9 +63,15 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 
+@retry(
+    retry=retry_if_exception_type(requests.RequestException),
+    wait=wait_exponential(multiplier=2, min=2, max=8),
+    stop=stop_after_attempt(5),
+    reraise=True,
+)
 def fetch_page(url: str) -> str:
     """
-    Fetch the HTML content of a given URL.
+    Fetch the HTML content of a given URL with exponential backoff retry.
 
     Args:
         url: The URL to fetch.
@@ -67,7 +80,7 @@ def fetch_page(url: str) -> str:
         The HTML content as a string.
 
     Raises:
-        requests.RequestException: If the network request fails.
+        requests.RequestException: If the network request fails after retries.
     """
     headers = {"User-Agent": USER_AGENT}
     response = requests.get(url, headers=headers, timeout=10)
@@ -137,11 +150,11 @@ def get_next_page_url(html: str, current_url: str) -> str | None:
 
 def save_to_csv(data: List[Dict[str, object]], filename: str = CSV_FILENAME) -> None:
     """
-    Save extracted data to a CSV file using pandas.
+    Save extracted data to CSV, JSON, and SQLite using pandas.
 
     Args:
         data: List of dictionaries with keys 'title' and 'price'.
-        filename: Output CSV filename.
+        filename: Output CSV filename (default: books.csv).
 
     Returns:
         None
@@ -150,8 +163,26 @@ def save_to_csv(data: List[Dict[str, object]], filename: str = CSV_FILENAME) -> 
         raise ValueError("No data to save.")
 
     df = pd.DataFrame(data)
+
+    # Save to CSV
     df.to_csv(filename, index=False)
     logger.info("Saved %d books to %s", len(data), filename)
+
+    # Save to JSON
+    try:
+        df.to_json(JSON_FILENAME, orient="records")
+        logger.info("Saved %d books to %s", len(data), JSON_FILENAME)
+    except Exception as exc:
+        logger.error("Failed to save JSON: %s", exc)
+
+    # Save to SQLite
+    try:
+        conn = sqlite3.connect(SQLITE_DB_FILENAME)
+        df.to_sql(TABLE_NAME, conn, if_exists="replace", index=False)
+        conn.close()
+        logger.info("Saved %d books to SQLite database %s", len(data), SQLITE_DB_FILENAME)
+    except Exception as exc:
+        logger.error("Failed to save SQLite: %s", exc)
 
 
 def main() -> None:
@@ -184,16 +215,15 @@ def main() -> None:
         if not all_books:
             raise ValueError("No books found.")
 
-        logger.info("Saving %d books to %s ...", len(all_books), CSV_FILENAME)
+        logger.info("Saving %d books ...", len(all_books))
         save_to_csv(all_books)
         logger.info(
-            "Success: Scraped %d books and saved to %s",
+            "Success: Scraped %d books and saved to CSV, JSON, and SQLite.",
             len(all_books),
-            CSV_FILENAME,
         )
 
     except requests.RequestException as exc:
-        logger.error("Network error: %s", exc)
+        logger.error("Network error after retries: %s", exc)
     except (ValueError, AttributeError) as exc:
         logger.error("Parsing error: %s", exc)
     except Exception as exc:

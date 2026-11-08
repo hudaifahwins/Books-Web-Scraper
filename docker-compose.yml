@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  scraper:
+    build: .
+    container_name: bookscraper
+    restart: on-failure
+    env_file:
+      - .env
+    volumes:
+      - ./books.csv:/app/books.csv
+      - ./books.json:/app/books.json
+      - ./books.db:/app/books.db
+      - ./scraper.log:/app/scraper.log

@@ -1,36 +1,28 @@
 # 🕸️ BookScraper Pro
 
-**Effortless Book Data Extraction – Built for Speed, Reliability, and Client-Ready Results.**
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)
+
+**Enterprise‑grade web scraper for extracting book data from [books.toscrape.com](http://books.toscrape.com) with robust retry logic, structured logging, and multi‑format output.**
 
 ---
 
 ## Overview
 
-BookScraper Pro is a lightweight yet powerful Python web scraper that extracts structured book information (title, price, availability, rating, and more) from online bookstore catalogs. It is designed with professional-grade practices: rotating user-agent spoofing, robust error handling, and clean, consistent price formatting – making it a drop‑in solution for market research, price monitoring, or data‑driven e‑commerce insights.
-
-Whether you're a freelancer delivering a one‑off data extraction task or building a recurring data pipeline, BookScraper Pro is built to impress.
+BookScraper Pro is a production‑ready Python scraper that extracts book titles and prices from the demo bookstore. It includes exponential backoff retries, structured logging, and exports results to CSV, JSON, and SQLite — all containerized with Docker for easy deployment.
 
 ---
 
 ## Features
 
-- 🔄 **User‑Agent Spoofing** – Rotates realistic browser user‑agents to reduce the risk of being blocked.
-- 💰 **Clean Price Formatting** – Converts raw price strings into standardized numeric values (e.g., `£19.99` → `19.99`) for easy analysis.
-- 🛡️ **Robust Error Handling** – Gracefully handles network timeouts, invalid pages, and missing elements, with informative error messages.
-- 📦 **CSV Export** – Saves scraped data to a well‑structured CSV file (default: `books.csv`).
-- 🚀 **Fast & Lightweight** – Minimal dependencies, quick to run, and easy to extend.
-- 🔍 **Modular Design** – Each function has a single responsibility, making the codebase easy to test and maintain.
+- 🔄 **Tenacity Retry** – Automatic retry with exponential backoff (2s, 4s, 8s) on 429/500 network errors.
+- 🧾 **Structured Logging** – Logs to console and `scraper.log` with timestamps and levels.
+- 📊 **Multi‑Format Output** – Saves data to `books.csv`, `books.json`, and `books.db` (SQLite).
+- 🐳 **Dockerized** – Simple one‑command containerization with `docker-compose`.
+- 🔧 **Configurable** – Target URL and request delay configurable via `.env`.
 
 ---
 
-## Installation
-
-### Prerequisites
-
-- Python 3.7 or higher
-- `pip` (Python package installer)
-
-### Install Required Libraries
-
-Open your terminal and run:
+## Architecture
 
