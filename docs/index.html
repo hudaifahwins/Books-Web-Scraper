@@ -1344,7 +1344,7 @@ body,
         async function initDashboard() {
             try {
                 const t0 = performance.now();
-                const res = await fetch('https://YOUR-BACKEND-URL.onrender.com/books?limit=1000');
+                const res = await fetch('https://YOUR-RENDER-URL.onrender.com/books?limit=1000');
                 const data = await res.json();
                 const t1 = performance.now();
                 
