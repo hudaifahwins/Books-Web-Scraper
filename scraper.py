@@ -2,7 +2,11 @@
 Production-ready web scraper for books.toscrape.com.
 
 This script fetches all pages of the books catalogue, extracts each
-book's title and price, and saves the data to CSV, JSON, and SQLite.
+book's title and price, and saves the data to CSV, JSON, SQLite,
+and PostgreSQL.
+
+If a local books.csv already exists, it will load that data instead
+of re-scraping the website.
 """
 
 import logging
@@ -25,6 +29,9 @@ from tenacity import (
 )
 from tqdm import tqdm
 
+from sqlalchemy import Column, Float, Integer, String, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
 # Load environment variables
 load_dotenv()
 
@@ -43,6 +50,23 @@ TOTAL_PAGES = 50
 # Environment-driven configuration
 TARGET_URL = os.getenv("TARGET_URL", "http://books.toscrape.com")
 REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "1"))
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg2://admin:secret@db:5432/books_db",
+)
+
+# SQLAlchemy setup for PostgreSQL
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+class Book(Base):
+    __tablename__ = "books"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    price = Column(Float)
+
 
 # Logging configuration
 logger = logging.getLogger(__name__)
@@ -148,6 +172,35 @@ def get_next_page_url(html: str, current_url: str) -> str | None:
     return urljoin(current_url, next_link["href"])
 
 
+def load_from_csv(filename: str = CSV_FILENAME) -> List[Dict[str, object]]:
+    """
+    Load book data from a local CSV file.
+
+    Args:
+        filename: Path to the CSV file.
+
+    Returns:
+        List of dicts with 'title' and 'price' keys.
+    """
+    if not os.path.exists(filename):
+        raise FileNotFoundError(f"CSV file not found: {filename}")
+
+    df = pd.read_csv(filename)
+    # Normalise column names (in case of whitespace)
+    df.columns = [col.strip() for col in df.columns]
+
+    if "title" not in df.columns or "price" not in df.columns:
+        raise ValueError("CSV must contain 'title' and 'price' columns")
+
+    # Convert price to float and drop invalid rows
+    df["price"] = pd.to_numeric(df["price"], errors="coerce")
+    df = df.dropna(subset=["title", "price"])
+
+    books = df[["title", "price"]].to_dict(orient="records")
+    logger.info("Loaded %d books from %s", len(books), filename)
+    return books
+
+
 def save_to_csv(data: List[Dict[str, object]], filename: str = CSV_FILENAME) -> None:
     """
     Save extracted data to CSV, JSON, and SQLite using pandas.
@@ -185,49 +238,101 @@ def save_to_csv(data: List[Dict[str, object]], filename: str = CSV_FILENAME) -> 
         logger.error("Failed to save SQLite: %s", exc)
 
 
+def save_to_postgres(data: List[Dict[str, object]]) -> None:
+    """
+    Save extracted data to the PostgreSQL database via SQLAlchemy.
+
+    Args:
+        data: List of dictionaries with keys 'title' and 'price'.
+
+    Returns:
+        None
+    """
+    if not data:
+        raise ValueError("No data to save to PostgreSQL.")
+
+    # Create tables if they don't exist
+    Base.metadata.create_all(bind=engine)
+
+    db = SessionLocal()
+    try:
+        # Clear existing rows to avoid duplicates
+        db.query(Book).delete()
+        db.commit()
+
+        # Insert new books
+        for item in data:
+            book = Book(title=item["title"], price=item["price"])
+            db.add(book)
+
+        db.commit()
+        logger.info("Saved %d books to PostgreSQL", len(data))
+    except Exception as exc:
+        db.rollback()
+        logger.error("Failed to save to PostgreSQL: %s", exc)
+        raise
+    finally:
+        db.close()
+
+
 def main() -> None:
     """Main execution function."""
     all_books = []
-    url = TARGET_URL
 
-    try:
-        # Use tqdm to display a progress bar for the known total number of pages.
-        with tqdm(total=TOTAL_PAGES, desc="Scraping pages", unit="page") as pbar:
-            while url and pbar.n < TOTAL_PAGES:
-                logger.info("Fetching %s ...", url)
-                html = fetch_page(url)
+    # First check if a local CSV with book data already exists.
+    if os.path.exists(CSV_FILENAME):
+        logger.info("Found existing %s. Loading data from file.", CSV_FILENAME)
+        try:
+            all_books = load_from_csv(CSV_FILENAME)
+        except (ValueError, FileNotFoundError) as exc:
+            logger.error("Failed to load CSV: %s", exc)
+            all_books = []
+    else:
+        logger.info("No local CSV found. Scraping website.")
+        url = TARGET_URL
 
-                logger.info("Parsing book data ...")
-                books = parse_books(html)
-                all_books.extend(books)
+        try:
+            # Use tqdm to display a progress bar for the known total number of pages.
+            with tqdm(total=TOTAL_PAGES, desc="Scraping pages", unit="page") as pbar:
+                while url and pbar.n < TOTAL_PAGES:
+                    logger.info("Fetching %s ...", url)
+                    html = fetch_page(url)
 
-                next_url = get_next_page_url(html, url)
-                if next_url is None:
-                    logger.info("No next page found; stopping.")
-                    break
+                    logger.info("Parsing book data ...")
+                    books = parse_books(html)
+                    all_books.extend(books)
 
-                # Respect the server: wait before the next request.
-                logger.debug("Waiting %.2f seconds before next request.", REQUEST_DELAY)
-                time.sleep(REQUEST_DELAY)
-                url = next_url
-                pbar.update(1)
+                    next_url = get_next_page_url(html, url)
+                    if next_url is None:
+                        logger.info("No next page found; stopping.")
+                        break
 
-        if not all_books:
-            raise ValueError("No books found.")
+                    # Respect the server: wait before the next request.
+                    logger.debug("Waiting %.2f seconds before next request.", REQUEST_DELAY)
+                    time.sleep(REQUEST_DELAY)
+                    url = next_url
+                    pbar.update(1)
 
-        logger.info("Saving %d books ...", len(all_books))
-        save_to_csv(all_books)
-        logger.info(
-            "Success: Scraped %d books and saved to CSV, JSON, and SQLite.",
-            len(all_books),
-        )
+        except requests.RequestException as exc:
+            logger.error("Network error after retries: %s", exc)
+        except (ValueError, AttributeError) as exc:
+            logger.error("Parsing error: %s", exc)
+        except Exception as exc:
+            logger.error("An unexpected error occurred: %s", exc)
 
-    except requests.RequestException as exc:
-        logger.error("Network error after retries: %s", exc)
-    except (ValueError, AttributeError) as exc:
-        logger.error("Parsing error: %s", exc)
-    except Exception as exc:
-        logger.error("An unexpected error occurred: %s", exc)
+    if not all_books:
+        logger.error("No books data available for insertion.")
+        return
+
+    logger.info("Saving %d books ...", len(all_books))
+    # Always write the local files to keep them up-to-date
+    save_to_csv(all_books)
+    # Save to PostgreSQL (this is what the API and dashboard read)
+    save_to_postgres(all_books)
+    logger.info(
+        "Success: %d books saved to CSV, JSON, SQLite, and PostgreSQL.",
+        len(all_books),
+    )
 
 
 if __name__ == "__main__":
