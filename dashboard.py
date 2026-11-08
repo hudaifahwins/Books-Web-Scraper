@@ -8,74 +8,94 @@ API_URL = "http://api:8000/books"
 st.set_page_config(page_title="BookScraper Pro", layout="wide")
 
 # ------------------------------------------------------------------
-# Custom CSS: Inter font, hide Streamlit chrome, premium card styling
+# Massive CSS Override
 # ------------------------------------------------------------------
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-    .stApp {
-        font-family: 'Inter', sans-serif;
-        background-color: #0e1117;
-        color: #ffffff;
+    * {
+        font-family: 'Inter', sans-serif !important;
     }
 
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    .stApp {
+        background-color: #09090b;
+    }
 
-    .premium-card {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+    [data-testid="stHeader"],
+    footer,
+    #MainMenu {
+        visibility: hidden;
+    }
+
+    .block-container {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+        max-width: 1200px;
+    }
+
+    /* Custom header */
+    .custom-header {
+        margin-bottom: 40px;
+    }
+
+    .custom-header h1 {
+        font-weight: 600;
+        font-size: 32px;
+        letter-spacing: -1px;
+        color: #ffffff;
+        margin-bottom: 4px;
+    }
+
+    .custom-header p {
+        font-size: 16px;
+        color: #a1a1aa;
+        margin: 0;
+    }
+
+    /* KPI cards */
+    .kpi-container {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .kpi-card {
+        background: #18181b;
+        border: 1px solid #27272a;
         border-radius: 12px;
         padding: 24px;
-        backdrop-filter: blur(10px);
+        flex: 1;
     }
 
-    .card-label {
-        font-size: 14px;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.6);
+    .kpi-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #a1a1aa;
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-bottom: 8px;
     }
 
-    .card-value {
+    .kpi-value {
         font-size: 36px;
-        font-weight: 800;
+        font-weight: 700;
         color: #ffffff;
         line-height: 1.2;
-    }
-
-    .card-subtitle {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.5);
-        margin-top: 8px;
-    }
-
-    .header-title {
-        font-size: 42px;
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 4px;
-    }
-
-    .header-subtitle {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.6);
-        font-weight: 300;
-        letter-spacing: 0.5px;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------
-# Header
+# Custom Header (raw HTML)
 # ------------------------------------------------------------------
-st.markdown('<div class="header-title">📚 BookScraper Pro</div>', unsafe_allow_html=True)
-st.markdown('<div class="header-subtitle">Enterprise Data Pipeline & Analytics</div>', unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("""
+<div class="custom-header">
+    <h1>BookScraper Pro</h1>
+    <p>Enterprise Data Pipeline and Analytics</p>
+</div>
+""", unsafe_allow_html=True)
+
 
 @st.cache_data(ttl=60)
 def fetch_books():
@@ -83,111 +103,72 @@ def fetch_books():
         response = requests.get(API_URL, timeout=10)
         response.raise_for_status()
         return response.json()
-    except requests.RequestException as exc:
-        st.error(f"Failed to fetch data from API: {exc}")
+    except requests.RequestException:
         return []
 
 books = fetch_books()
 
 if not books:
-    st.warning("No book data available. Please check that the scraper has populated the database.")
+    st.warning("No book data available. Please check the API connection.")
     st.stop()
 
 df = pd.DataFrame(books)
 
 # ------------------------------------------------------------------
-# KPI Cards (custom HTML instead of st.metric)
+# KPI Cards (flexbox HTML, no st.metric)
 # ------------------------------------------------------------------
 total_books = len(df)
 avg_price = df["price"].mean()
 max_price = df["price"].max()
-most_expensive = df.loc[df["price"].idxmax(), "title"]
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown(f"""
-    <div class="premium-card">
-        <div class="card-label">Total Books</div>
-        <div class="card-value">{total_books}</div>
-        <div class="card-subtitle">Scraped titles</div>
+st.markdown(f"""
+<div class="kpi-container">
+    <div class="kpi-card">
+        <div class="kpi-label">Total Books</div>
+        <div class="kpi-value">{total_books:,}</div>
     </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown(f"""
-    <div class="premium-card">
-        <div class="card-label">Average Price</div>
-        <div class="card-value">£{avg_price:.2f}</div>
-        <div class="card-subtitle">Across all titles</div>
+    <div class="kpi-card">
+        <div class="kpi-label">Average Price</div>
+        <div class="kpi-value">£{avg_price:.2f}</div>
     </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown(f"""
-    <div class="premium-card">
-        <div class="card-label">Most Expensive</div>
-        <div class="card-value">£{max_price:.2f}</div>
-        <div class="card-subtitle">{most_expensive[:50]}{'...' if len(most_expensive) > 50 else ''}</div>
+    <div class="kpi-card">
+        <div class="kpi-label">Most Expensive</div>
+        <div class="kpi-value">£{max_price:.2f}</div>
     </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# ------------------------------------------------------------------
-# Sidebar Filter
-# ------------------------------------------------------------------
-st.sidebar.title("🔍 Filters")
-search_query = st.sidebar.text_input("Search by book title:", "")
-
-if search_query:
-    filtered_df = df[df["title"].str.contains(search_query, case=False, na=False)]
-else:
-    filtered_df = df
+</div>
+""", unsafe_allow_html=True)
 
 # ------------------------------------------------------------------
-# Horizontal Bar Chart (Top 10 most expensive books)
+# Plotly Horizontal Bar Chart (Top 10 most expensive books)
 # ------------------------------------------------------------------
-st.subheader("🏆 Top 10 Most Expensive Books")
-top_10 = filtered_df.nlargest(10, "price")
+top_10 = df.nlargest(10, "price")
 
 fig = px.bar(
     top_10,
     x="price",
     y="title",
     orientation="h",
-    title="Top 10 Book Prices",
-    labels={"title": "", "price": "Price (£)"},
-    color="price",
-    color_continuous_scale=["#4a00e0", "#00e5ff"],
+    labels={"price": "Price (£)", "title": ""},
 )
+
+fig.update_traces(marker_color="#6366f1")
 
 fig.update_layout(
-    height=700,
-    showlegend=False,
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="Inter, sans-serif", size=14, color="#ffffff"),
-    margin=dict(l=20, r=20, t=60, b=20),
+    margin=dict(l=0, r=0, t=20, b=0),
+    height=400,
+    showlegend=False,
+    bargap=0.4,
+    font=dict(color="#ffffff"),
 )
 
-fig.update_xaxes(showgrid=False, zeroline=False, tickfont=dict(color="rgba(255,255,255,0.7)"))
-fig.update_yaxes(showgrid=False, zeroline=False, tickfont=dict(color="#ffffff", size=13))
-
-fig.update_traces(marker_line_width=0)
+fig.update_xaxes(showgrid=False, zeroline=False, showline=False)
+fig.update_yaxes(showgrid=False, zeroline=False, showline=False)
 
 st.plotly_chart(fig, use_container_width=True)
 
 # ------------------------------------------------------------------
-# Data Table with CSV Download
+# Data Table
 # ------------------------------------------------------------------
-st.subheader("📋 Book Data Table")
-st.dataframe(filtered_df, use_container_width=True)
-
-csv = filtered_df.to_csv(index=False)
-st.download_button(
-    label="📥 Download CSV",
-    data=csv,
-    file_name="books.csv",
-    mime="text/csv",
-)
+st.dataframe(df, use_container_width=True, hide_index=True)
