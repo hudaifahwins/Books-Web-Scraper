@@ -23,9 +23,12 @@ class Book(Base):
     price = Column(Float)
 
 
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Book API", version="1.0.0")
+
+
+@app.on_event("startup")
+def init_db():
+    Base.metadata.create_all(bind=engine)
 
 
 def get_db():
