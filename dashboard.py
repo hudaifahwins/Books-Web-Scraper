@@ -31,6 +31,10 @@ html_content = """
         }
         .skeleton { background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .kpi-card, .chart-container {
+            transform: translateZ(0);
+            will-change: transform;
+        }
     </style>
 </head>
 <body class="bg-[#09090b] text-zinc-100 flex flex-col h-screen overflow-hidden selection:bg-indigo-500/30">
@@ -97,7 +101,7 @@ html_content = """
 
                     <!-- KPI Cards -->
                     <div class="grid grid-cols-3 gap-6 shrink-0">
-                        <div class="bg-gradient-to-b from-[#18181b] to-[#09090b] border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300">
+                        <div class="kpi-card bg-gradient-to-b from-[#18181b] to-[#09090b] border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300">
                             <div class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Total Books</div>
                             <div class="text-4xl font-bold text-white mt-3 tracking-tight" id="total-books"><div class="h-10 w-24 skeleton rounded"></div></div>
                             <div class="mt-2 flex items-center gap-2">
@@ -108,7 +112,7 @@ html_content = """
                                 <span class="text-zinc-500 text-xs">vs last month</span>
                             </div>
                         </div>
-                        <div class="bg-gradient-to-b from-[#18181b] to-[#09090b] border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300">
+                        <div class="kpi-card bg-gradient-to-b from-[#18181b] to-[#09090b] border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300">
                             <div class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Average Price</div>
                             <div class="text-4xl font-bold text-white mt-3 tracking-tight" id="avg-price"><div class="h-10 w-24 skeleton rounded"></div></div>
                             <div class="mt-2 flex items-center gap-2">
@@ -119,7 +123,7 @@ html_content = """
                                 <span class="text-zinc-500 text-xs">vs last month</span>
                             </div>
                         </div>
-                        <div class="bg-gradient-to-b from-[#18181b] to-[#09090b] border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300">
+                        <div class="kpi-card bg-gradient-to-b from-[#18181b] to-[#09090b] border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300">
                             <div class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Most Expensive</div>
                             <div class="text-4xl font-bold text-white mt-3 tracking-tight" id="max-price"><div class="h-10 w-24 skeleton rounded"></div></div>
                             <div class="mt-2 flex items-center gap-2">
@@ -134,7 +138,7 @@ html_content = """
 
                     <!-- Chart -->
                     <div class="grid grid-cols-1 gap-6 flex-1 min-h-[400px]">
-                        <div class="bg-[#121214] border border-white/5 rounded-2xl p-6 shadow-2xl flex flex-col relative overflow-hidden">
+                        <div class="chart-container bg-[#121214] border border-white/5 rounded-2xl p-6 shadow-2xl flex flex-col relative overflow-hidden">
                             <h3 class="text-base font-semibold text-white mb-6">Top 10 Most Expensive Books</h3>
                             <div class="flex-1 relative w-full">
                                 <canvas id="booksChart"></canvas>
@@ -180,6 +184,7 @@ html_content = """
         let allData = [];
         let currentSort = { key: 'price', asc: false };
         let myChart = null;
+        let debounceTimer;
 
         async function initDashboard() {
             try {
@@ -190,12 +195,16 @@ html_content = """
                 
                 document.getElementById('latency').innerText = Math.round(t1 - t0) + 'ms';
                 allData = data;
+                initChart();
                 updateUI();
 
                 document.getElementById('searchInput').addEventListener('input', (e) => {
-                    const query = e.target.value.toLowerCase();
-                    const filtered = allData.filter(b => b.title.toLowerCase().includes(query));
-                    updateUI(filtered);
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        const query = e.target.value.toLowerCase();
+                        const filtered = allData.filter(b => b.title.toLowerCase().includes(query));
+                        updateUI(filtered);
+                    }, 150);
                 });
 
             } catch (e) {
@@ -217,7 +226,6 @@ html_content = """
 
         function renderTable(data) {
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
             
             const sortedData = [...data].sort((a, b) => {
                 if (currentSort.key === 'title') {
@@ -227,14 +235,14 @@ html_content = """
                 }
             });
 
-            sortedData.forEach(book => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-white/[0.02] transition-colors group">
-                        <td class="px-6 py-3 text-zinc-300 font-medium group-hover:text-white transition-colors">${book.title}</td>
-                        <td class="px-6 py-3 text-right text-indigo-400 font-medium font-mono">£${book.price.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
+            const html = sortedData.map(book => `
+                <tr class="hover:bg-white/[0.02] transition-colors group">
+                    <td class="px-6 py-3 text-zinc-300 font-medium group-hover:text-white transition-colors">${book.title}</td>
+                    <td class="px-6 py-3 text-right text-indigo-400 font-medium font-mono">£${book.price.toFixed(2)}</td>
+                </tr>
+            `).join('');
+            
+            tbody.innerHTML = html;
             
             document.getElementById('sort-icon-title').innerText = currentSort.key === 'title' ? (currentSort.asc ? '↑' : '↓') : '';
             document.getElementById('sort-icon-price').innerText = currentSort.key === 'price' ? (currentSort.asc ? '↑' : '↓') : '';
@@ -252,10 +260,8 @@ html_content = """
             updateUI(filtered);
         }
 
-        function renderChart(top10) {
+        function initChart() {
             const ctx = document.getElementById('booksChart').getContext('2d');
-            if (myChart) myChart.destroy();
-            
             const gradient = ctx.createLinearGradient(0, 0, 800, 0);
             gradient.addColorStop(0, '#4f46e5');
             gradient.addColorStop(1, '#c084fc');
@@ -263,9 +269,9 @@ html_content = """
             myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: top10.map(b => b.title),
+                    labels: [],
                     datasets: [{
-                        data: top10.map(b => b.price),
+                        data: [],
                         backgroundColor: gradient,
                         borderRadius: 4,
                         borderSkipped: false,
@@ -306,6 +312,13 @@ html_content = """
                     }
                 }
             });
+        }
+
+        function renderChart(top10) {
+            if (!myChart) initChart();
+            myChart.data.labels = top10.map(b => b.title);
+            myChart.data.datasets[0].data = top10.map(b => b.price);
+            myChart.update('none');
         }
 
         initDashboard();
