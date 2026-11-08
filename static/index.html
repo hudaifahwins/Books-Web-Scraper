@@ -150,7 +150,7 @@
 
                     <!-- Table Container -->
                     <div class="glass-card rounded-xl overflow-hidden shrink-0 h-[260px] flex flex-col">
-                        <div class="flex-1 overflow-y-auto scrollable">
+                        <div class="flex-1 overflow-y-auto scrollable pr-2" style="scrollbar-gutter: stable;">
                             <table class="w-full text-left text-sm table-fixed">
                                 <colgroup>
                                     <col class="w-[80%]">
@@ -387,21 +387,18 @@
                 return;
             }
 
-            // The Vibrant Indigo Gradient for the Chart
-            const gradient = ctx.createLinearGradient(0, 0, 800, 0);
-            gradient.addColorStop(0, '#6366f1'); // Indigo
-            gradient.addColorStop(1, '#a855f7'); // Purple
-
             myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: top10.map(b => b.title),
                     datasets: [{
                         data: top10.map(b => b.price),
-                        backgroundColor: gradient,
+                        backgroundColor: '#6366f1',
                         borderRadius: 4,
                         borderSkipped: false,
-                        barThickness: 8 // Ultra-thin
+                        barThickness: 6,
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.9
                     }]
                 },
                 options: {
@@ -450,7 +447,7 @@
                     labels: ['Budget (<£20)', 'Mid-Range (£20-£40)', 'Premium (>£40)'],
                     datasets: [{
                         data: [budget, mid, premium],
-                        backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899'], // Beautiful fintech colors
+                        backgroundColor: ['#4f46e5', '#818cf8', '#c7d2fe'],
                         borderWidth: 0,
                         hoverOffset: 4
                     }]
@@ -478,10 +475,12 @@
                     labels: cheapest.map(b => b.title),
                     datasets: [{
                         data: cheapest.map(b => b.price),
-                        backgroundColor: '#10b981', // Emerald Green
+                        backgroundColor: '#10b981',
                         borderRadius: 4,
                         borderSkipped: false,
-                        barThickness: 8
+                        barThickness: 6,
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.9
                     }]
                 },
                 options: {
