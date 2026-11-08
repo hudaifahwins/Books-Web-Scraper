@@ -1,7 +1,7 @@
 """
 Production-ready web scraper for books.toscrape.com.
 
-This script fetches the first page of the books catalogue, extracts each
+This script fetches all pages of the books catalogue, extracts each
 book's title and price, and saves the data to a CSV file.
 
 Usage:
@@ -9,11 +9,14 @@ Usage:
 """
 
 import re
+import time
 from typing import Dict, List
+from urllib.parse import urljoin
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from tqdm import tqdm
 
 # Constants
 TARGET_URL = "http://books.toscrape.com"
@@ -23,6 +26,8 @@ USER_AGENT = (
     "Chrome/119.0.0.0 Safari/537.36"
 )
 CSV_FILENAME = "books.csv"
+PAGE_DELAY_SECONDS = 1
+TOTAL_PAGES = 50
 
 
 def fetch_page(url: str) -> str:
@@ -85,6 +90,24 @@ def parse_books(html: str) -> List[Dict[str, object]]:
     return books
 
 
+def get_next_page_url(html: str, current_url: str) -> str | None:
+    """
+    Find the URL of the next page from the 'next' button.
+
+    Args:
+        html: The HTML content of the current page.
+        current_url: The URL of the current page (used for resolution).
+
+    Returns:
+        The absolute URL of the next page, or None if there is no next page.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    next_link = soup.select_one("li.next a")
+    if next_link is None:
+        return None
+    return urljoin(current_url, next_link["href"])
+
+
 def save_to_csv(data: List[Dict[str, object]], filename: str = CSV_FILENAME) -> None:
     """
     Save extracted data to a CSV file using pandas.
@@ -105,20 +128,35 @@ def save_to_csv(data: List[Dict[str, object]], filename: str = CSV_FILENAME) -> 
 
 def main() -> None:
     """Main execution function."""
+    all_books = []
+    url = TARGET_URL
+
     try:
-        print(f"Fetching {TARGET_URL} ...")
-        html = fetch_page(TARGET_URL)
+        # Use tqdm to display a progress bar for the known total number of pages.
+        with tqdm(total=TOTAL_PAGES, desc="Scraping pages", unit="page") as pbar:
+            while url and pbar.n < TOTAL_PAGES:
+                print(f"Fetching {url} ...")
+                html = fetch_page(url)
 
-        print("Parsing book data ...")
-        books = parse_books(html)
+                print("Parsing book data ...")
+                books = parse_books(html)
+                all_books.extend(books)
 
-        if not books:
-            raise ValueError("No books found on the page.")
+                next_url = get_next_page_url(html, url)
+                if next_url is None:
+                    break
 
-        print(f"Saving {len(books)} books to {CSV_FILENAME} ...")
-        save_to_csv(books)
+                # Respect the server: wait before the next request.
+                time.sleep(PAGE_DELAY_SECONDS)
+                url = next_url
+                pbar.update(1)
 
-        print(f"Success: Scraped {len(books)} books and saved to {CSV_FILENAME}")
+        if not all_books:
+            raise ValueError("No books found.")
+
+        print(f"Saving {len(all_books)} books to {CSV_FILENAME} ...")
+        save_to_csv(all_books)
+        print(f"Success: Scraped {len(all_books)} books and saved to {CSV_FILENAME}")
 
     except requests.RequestException as exc:
         print(f"Network error: {exc}")
