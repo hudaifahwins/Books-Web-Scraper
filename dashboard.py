@@ -32,96 +32,129 @@ html_content = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    </style>
 </head>
-<body class="bg-[#050505] text-white font-sans antialiased flex h-screen overflow-hidden selection:bg-blue-500/30">
+<body class="bg-[#000000] text-white font-['Inter'] antialiased flex h-screen overflow-hidden selection:bg-blue-500/30">
 
     <!-- Sidebar -->
-    <aside class="w-64 h-screen bg-[#0a0a0a] border-r border-white/5 p-6 flex flex-col gap-8 shrink-0">
-        <!-- Minimalist logo -->
+    <aside class="w-[280px] border-r border-white/[0.05] bg-[#050505] p-6 flex flex-col gap-8 z-20 relative">
+        <!-- Logo -->
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-            </div>
-            <span class="text-lg font-semibold tracking-tight">BookScraper</span>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <defs>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="2" result="blur"/>
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <polygon points="16,2 28,9 28,23 16,30 4,23 4,9" stroke="#60a5fa" stroke-width="2" filter="url(#glow)"/>
+                <circle cx="16" cy="16" r="4" fill="#3b82f6"/>
+            </svg>
+            <span class="text-lg font-semibold tracking-tight">BookScraper Pro</span>
         </div>
 
-        <!-- Pill-shaped search input -->
-        <div class="relative w-full">
-            <input type="text" placeholder="Search books..." class="w-full bg-[#111] border border-white/10 rounded-full px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all" oninput="filterBooks(this.value)">
+        <!-- Search Box -->
+        <div class="relative">
+            <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+            <input type="text" id="searchInput" placeholder="Search books..." class="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all placeholder-gray-500 text-white">
         </div>
     </aside>
 
-    <!-- Main content -->
-    <main class="flex-1 p-10 overflow-y-auto relative">
-        <!-- Glowing background orb -->
-        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+    <!-- Main Area -->
+    <main class="flex-1 p-10 overflow-y-auto relative z-10 custom-scrollbar">
+        <!-- Background Glow -->
+        <div class="absolute top-[-20%] left-[20%] w-[800px] h-[600px] bg-blue-600/15 blur-[120px] rounded-full pointer-events-none z-[-1]"></div>
 
         <!-- Header -->
-        <h1 class="text-4xl font-semibold tracking-tight mb-2">Enterprise Analytics</h1>
-        <p class="text-gray-500 text-sm mb-8">Real-time insights from your book collection</p>
+        <h1 class="text-3xl font-semibold tracking-tight text-white mb-1">Enterprise Analytics</h1>
+        <p class="text-sm text-gray-400 mb-8">Real-time data pipeline insights.</p>
 
         <!-- KPI Cards -->
-        <div class="grid grid-cols-3 gap-6 mt-8 relative">
-            <div class="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group hover:border-blue-500/50 transition-all">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-                <div class="text-sm text-[#a1a1aa] uppercase tracking-wider mb-2">Total Books</div>
-                <div class="text-4xl font-semibold tracking-tight"><h2 id="total-books" class="inline">0</h2></div>
+        <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.1] group">
+                <div class="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_12px_rgba(59,130,246,0.8)]"></div>
+                <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">Total Books</div>
+                <div id="kpi-total" class="text-4xl font-semibold">0</div>
             </div>
-            <div class="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group hover:border-blue-500/50 transition-all">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-                <div class="text-sm text-[#a1a1aa] uppercase tracking-wider mb-2">Average Price</div>
-                <div class="text-4xl font-semibold tracking-tight"><h2 id="avg-price" class="inline">£0.00</h2></div>
+            <div class="bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.1] group">
+                <div class="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_12px_rgba(59,130,246,0.8)]"></div>
+                <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">Average Price</div>
+                <div id="kpi-avg" class="text-4xl font-semibold">£0.00</div>
             </div>
-            <div class="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group hover:border-blue-500/50 transition-all">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-                <div class="text-sm text-[#a1a1aa] uppercase tracking-wider mb-2">Most Expensive</div>
-                <div class="text-4xl font-semibold tracking-tight"><h2 id="max-price" class="inline">£0.00</h2></div>
+            <div class="bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.1] group">
+                <div class="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_12px_rgba(59,130,246,0.8)]"></div>
+                <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">Most Expensive</div>
+                <div id="kpi-max" class="text-4xl font-semibold">£0.00</div>
             </div>
         </div>
 
-        <!-- Chart -->
-        <div class="bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 mt-8 shadow-2xl relative">
-            <div class="relative w-full h-[400px]">
-                <canvas id="booksChart"></canvas>
+        <!-- Chart Container -->
+        <div class="bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] rounded-2xl p-6 shadow-2xl mb-8 h-[450px]">
+            <div class="relative w-full h-full">
+                <canvas id="chartCanvas"></canvas>
             </div>
+        </div>
+
+        <!-- Custom Table Container -->
+        <div class="bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] rounded-2xl p-6 shadow-2xl overflow-hidden">
+            <table class="w-full text-left text-sm text-gray-300">
+                <thead class="text-xs uppercase bg-white/[0.02] text-gray-400 border-b border-white/[0.05]">
+                    <tr>
+                        <th class="px-6 py-4 font-medium">ID</th>
+                        <th class="px-6 py-4 font-medium">Title</th>
+                        <th class="px-6 py-4 font-medium text-right">Price</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-white/[0.02]"></tbody>
+            </table>
         </div>
     </main>
 
     <script>
-        let allBooks = [];
+        let allData = [];
         let chart = null;
 
-        async function initDashboard() {
+        async function init() {
             try {
-                const res = await fetch('http://localhost:8000/books');
-                allBooks = await res.json();
-
-                // Update KPI numbers
-                document.getElementById('total-books').textContent = allBooks.length;
-                const avg = allBooks.reduce((sum, b) => sum + b.price, 0) / allBooks.length;
-                document.getElementById('avg-price').textContent = '£' + avg.toFixed(2);
-                const maxBook = allBooks.reduce((max, b) => b.price > max.price ? b : max, allBooks[0]);
-                document.getElementById('max-price').textContent = '£' + maxBook.price.toFixed(2);
-
-                renderChart(allBooks);
+                const res = await fetch('http://localhost:8000/books?limit=1000');
+                allData = await res.json();
+                renderDashboard(allData);
             } catch (err) {
                 console.error('Failed to load data', err);
             }
         }
 
-        function renderChart(books) {
-            // Sort top 10 by price descending
-            const top10 = [...books].sort((a, b) => b.price - a.price).slice(0, 10);
+        function renderDashboard(data) {
+            // Update KPIs
+            document.getElementById('kpi-total').textContent = data.length.toLocaleString();
+            const avg = data.reduce((sum, b) => sum + b.price, 0) / data.length;
+            document.getElementById('kpi-avg').textContent = '£' + avg.toFixed(2);
+            const maxBook = data.reduce((max, b) => b.price > max.price ? b : max, data[0]);
+            document.getElementById('kpi-max').textContent = '£' + maxBook.price.toFixed(2);
+
+            // Top 10 most expensive for chart
+            const top10 = [...data].sort((a, b) => b.price - a.price).slice(0, 10);
+
+            // Render chart
+            const ctx = document.getElementById('chartCanvas').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 450);
+            gradient.addColorStop(0, '#1d4ed8');
+            gradient.addColorStop(1, '#06b6d4');
 
             if (chart) {
                 chart.destroy();
             }
-
-            // Create gradient for bars
-            const ctx = document.getElementById('booksChart').getContext('2d');
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, '#60a5fa');
-            gradient.addColorStop(1, '#3b82f6');
 
             chart = new Chart(ctx, {
                 type: 'bar',
@@ -131,7 +164,7 @@ html_content = """
                         label: 'Price (£)',
                         data: top10.map(b => b.price),
                         backgroundColor: gradient,
-                        borderRadius: 8,
+                        borderRadius: 20,
                         borderSkipped: false
                     }]
                 },
@@ -145,7 +178,16 @@ html_content = """
                         }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#111',
+                            titleColor: '#ffffff',
+                            bodyColor: '#a1a1aa',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8
+                        }
                     },
                     scales: {
                         x: {
@@ -165,18 +207,31 @@ html_content = """
                     }
                 }
             });
+
+            // Populate table with top 50
+            const top50 = [...data].sort((a, b) => b.price - a.price).slice(0, 50);
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = top50.map(book => `
+                <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="px-6 py-4 text-gray-500">${book.id}</td>
+                    <td class="px-6 py-4">${book.title}</td>
+                    <td class="px-6 py-4 text-right font-medium text-white">£${book.price.toFixed(2)}</td>
+                </tr>
+            `).join('');
         }
 
-        function filterBooks(query) {
+        // Search listener
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.trim().toLowerCase();
             if (!query) {
-                renderChart(allBooks);
+                renderDashboard(allData);
                 return;
             }
-            const filtered = allBooks.filter(b => b.title.toLowerCase().includes(query.toLowerCase()));
-            renderChart(filtered);
-        }
+            const filtered = allData.filter(book => book.title.toLowerCase().includes(query));
+            renderDashboard(filtered);
+        });
 
-        initDashboard();
+        init();
     </script>
 </body>
 </html>
